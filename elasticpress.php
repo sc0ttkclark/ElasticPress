@@ -69,7 +69,7 @@ function ep_loader() {
 		}
 
 		// Load index statuses.
-		if ( true === apply_filters( 'ep_load_index_status', true ) ) {
+		if ( true === apply_filters( 'ep_load_index_status', true ) && defined( 'WP_EP_DEBUG' ) && true === WP_EP_DEBUG ) {
 
 			require_once( dirname( __FILE__ ) . '/classes/class-ep-index-status.php' );
 			new EP_Index_Status();
