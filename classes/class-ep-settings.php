@@ -479,4 +479,27 @@ class EP_Settings {
 
 		}
 	}
+
+	/**
+	 * Return the url to a ElasticPress settings tab
+	 *
+	 * @since 2.0
+	 *
+	 * @param string $tab     The name of the tab you want the url for.
+	 *
+	 * @return string
+	 */
+	public static function ep_setting_tab_url( $tab = '' ){
+		$defaults = array(
+			'page' => 'elasticpress'
+		);
+
+		if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK ){
+			$url = network_admin_url( 'settings.php' );
+		} else {
+			$url = admin_ur( 'settings.php' );
+		}
+
+		return add_query_arg( wp_parse_args( array( 'tab' => $tab ), $defaults ), $url );
+	}
 }
