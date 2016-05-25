@@ -70,15 +70,11 @@ class EP_Settings {
 		if ( defined( 'WP_DEBUG' ) && true === WP_DEBUG ) {
 
 			wp_register_script( 'ep_admin', EP_URL . 'assets/js/elasticpress-admin.js', array( 'jquery', 'jquery-ui-progressbar' ), EP_VERSION );
-
-			wp_register_style( 'ep_progress_style', EP_URL . 'assets/css/jquery-ui.css', array(), EP_VERSION );
 			wp_register_style( 'ep_styles', EP_URL . 'assets/css/elasticpress.css', array(), EP_VERSION );
 
 		} else {
 
 			wp_register_script( 'ep_admin', EP_URL . 'assets/js/elasticpress-admin.min.js', array( 'jquery', 'jquery-ui-progressbar' ), EP_VERSION );
-
-			wp_register_style( 'ep_progress_style', EP_URL . 'assets/css/jquery-ui.min.css', array(), EP_VERSION );
 			wp_register_style( 'ep_styles', EP_URL . 'assets/css/elasticpress.min.css', array(), EP_VERSION );
 
 		}
@@ -185,26 +181,17 @@ class EP_Settings {
 			}
 		}
 
-		add_settings_section( 'ep_settings_section_main', '', array(
-			$this,
-			'callback_ep_settings_section_main',
-		), 'elasticpress' );
+		add_settings_section( 'ep_settings_section_main', '', '__return_empty_string', 'elasticpress' );
 
 		add_settings_field( 'ep_host', esc_html__( 'Elasticsearch Host:', 'elasticpress' ), array(
 			$this,
 			'setting_callback_host',
 		), 'elasticpress', 'ep_settings_section_main' );
 
-		$stats = ep_get_index_status();
-
-		if ( $stats['status'] && ! is_wp_error( ep_check_host() ) ) {
-
-			add_settings_field( 'ep_activate', esc_html__( 'Use Elasticsearch:', 'elasticpress' ), array(
-				$this,
-				'setting_callback_activate',
-			), 'elasticpress', 'ep_settings_section_main' );
-
-		}
+		add_settings_field( 'ep_activate', esc_html__( 'Use Elasticsearch:', 'elasticpress' ), array(
+			$this,
+			'setting_callback_activate',
+		), 'elasticpress', 'ep_settings_section_main' );
 
 		register_setting( 'elasticpress', 'ep_host', array( $this, 'sanitize_ep_host' ) );
 		register_setting( 'elasticpress', 'ep_activate', array( $this, 'sanitize_ep_activate' ) );
@@ -240,71 +227,6 @@ class EP_Settings {
 			'elasticpress',
 			array( $this, 'settings_page' )
 		);
-	}
-
-	/**
-	 * Load the settings page view
-	 *
-	 * Callback for add_meta_box to load column view.
-	 *
-	 * @since 1.9
-	 *
-	 * @param WP_Post|NULL $post Normally WP_Post object, but NULL in our case.
-	 * @param array        $args Arguments passed from add_meta_box.
-	 *
-	 * @return void
-	 */
-	public function load_view( $post, $args ) {
-
-		$file = dirname( dirname( __FILE__ ) ) . '/includes/settings/' . sanitize_file_name( $args['args'][0] );
-
-		if ( file_exists( $file ) ) {
-			require $file;
-		}
-	}
-
-	/**
-	 * Populate settings page columns
-	 *
-	 * Creates meta boxes for the settings page columns.
-	 *
-	 * @since 1.9
-	 *
-	 * @return void
-	 */
-	protected function populate_columns() {
-
-		add_meta_box(
-			'ep-contentbox-1',
-			'Settings',
-			array( $this, 'load_view' ),
-			$this->options_page,
-			'normal',
-			'core',
-			array( 'form.php' )
-		);
-
-		add_meta_box(
-			'ep-contentbox-2',
-			'Current Status',
-			array( $this, 'load_view' ),
-			$this->options_page,
-			'side',
-			'core',
-			array( 'status.php' )
-		);
-
-		/**
-		 * Allow other metaboxes
-		 *
-		 * Allows individual features to add their own meta-boxes.
-		 *
-		 * @since 0.4.0
-		 *
-		 * @param EP_Settings $this Instance of ep_Settings.
-		 */
-		do_action( 'ep_do_settings_meta', $this );
-
 	}
 
 	/**
@@ -365,8 +287,12 @@ class EP_Settings {
 	 * @return void
 	 */
 	public function setting_callback_activate() {
-
-		echo '<input type="checkbox" value="1" name="ep_activate" id="ep_activate"' . checked( true, ep_is_activated(), false ) . ' />';
+		$stats = ep_get_index_status();
+		$disabled = 'disabled';
+		if ( $stats['status'] && ! is_wp_error( ep_check_host() ) ) {
+			$disabled = '';
+		}
+		echo '<input type="checkbox" value="1" name="ep_activate" id="ep_activate"' . checked( true, ep_is_activated(), false ) . ' ' . $disabled  . '/>';
 
 	}
 
@@ -398,7 +324,7 @@ class EP_Settings {
 			$host      = EP_HOST;
 		}
 
-		echo '<input name="ep_host" id="ep_host" type="text" value="' . esc_attr( $host ) . '" ' . esc_attr( $read_only ) . '>';
+		echo '<input name="ep_host" id="ep_host"  class="regular-text" type="text" value="' . esc_attr( $host ) . '" ' . esc_attr( $read_only ) . '>';
 
 	}
 
@@ -413,24 +339,7 @@ class EP_Settings {
 	 */
 	public function settings_page() {
 
-		$this->populate_columns();
-
 		include dirname( __FILE__ ) . '/../includes/settings-page.php';
-
-	}
-
-	/**
-	 * Displays Settings header
-	 *
-	 * Adds a header to main settings information
-	 *
-	 * @since 1.9
-	 *
-	 * @return void
-	 */
-	public function callback_ep_settings_section_main() {
-
-		echo '<h2>' . esc_html__( 'Elasticsearch Integration Options', 'elasticpress' ) . '</h2>';
 
 	}
 

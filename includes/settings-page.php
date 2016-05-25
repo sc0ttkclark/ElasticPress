@@ -30,12 +30,12 @@
 				'post-types' => esc_html__( 'Post Types', 'elasticpress' ),
 				'stats' => esc_html__( 'Stats', 'elasticpress' ),
 			) );
-
-			$current_tab = ( isset( $_GET['tab'] ) && isset( $tabs[ $_GET['tab'] ] ) ) ? $tabs[ $_GET['tab'] ] : sanitize_title( reset( $tabs ) );
+			$tab_slugs = array_keys( $tabs );
+			$current_tab = ( isset( $_GET['tab'] ) && isset( $tabs[ $_GET['tab'] ] ) ) ? $_GET['tab']  : reset( $tab_slugs );
 
 			foreach( $tabs as $slug => $tab){
 				$active_tab = ( $current_tab === $slug ) ? 'nav-tab-active' : '';
-				printf( '<a class="nav-tab %s" id="%s-tab" href="%s">%s</a>', $active_tab, esc_attr( $slug ), esc_url( EP_Settings::ep_setting_tab_url( $tab ) ), esc_html( $tab )  );
+				printf( '<a class="nav-tab %s" id="%s-tab" href="%s">%s</a>', $active_tab, esc_attr( $slug ), esc_url( EP_Settings::ep_setting_tab_url( $slug ) ), esc_html( $tab )  );
 			}
 		?>
 	</h2>

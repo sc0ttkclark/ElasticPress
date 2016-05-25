@@ -1,3 +1,39 @@
+#indexprogresss{
+	display: none;
+	&:after {
+		content: " ";
+		clear: both;
+		display: block;
+	}
+
+	#progressstats {
+		float: left;
+		padding-bottom: 5px;
+	}
+
+	#progresspercent {
+		float: right;
+		padding-bottom: 5px;
+	}
+
+	#progressbar {
+		clear: both;
+		background: #fff;
+		height: 10px;
+		border: 1px solid #e5e5e5;
+
+		.ui-progressbar-value{
+			background: #008ec2;
+			height: 10px;
+		}
+	}
+
+	#ep_pause_index {
+		float: right;
+		margin: 10px 0;
+	}
+}
+
 #ep_stats {
 
 	#ep_site_sel {
@@ -50,5 +86,5 @@
 }
 
 #ep_restart_index {
-	float: right;
+ display: none;
 }
