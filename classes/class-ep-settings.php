@@ -262,7 +262,23 @@ class EP_Settings {
 
 		check_admin_referer( 'ep_post_type_nonce', 'nonce' );
 
-		return wp_send_json_success( 'test' );
+		$post_types           = array();
+		$post_types_selected  = ep_get_indexable_post_types();
+		$post_types_available = get_post_types( array( 'public' => true ) );
+
+		foreach ( $post_types_available as $post_type_slug ) {
+
+			$post_type = get_post_type_object( $post_type_slug );
+
+			$post_types[ $post_type_slug ] = array(
+				'name'     => esc_html( $post_type->labels->singular_name ),
+				'selected' => in_array( $post_type_slug, $post_types_selected, true ),
+			);
+
+		}
+
+		wp_send_json_success( $post_types );
+		wp_die();
 
 	}
 
