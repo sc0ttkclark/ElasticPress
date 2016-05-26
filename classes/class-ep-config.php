@@ -123,7 +123,25 @@ class EP_Config {
 	 */
 	public function get_indexable_post_types() {
 
-		$post_types = get_option( 'ep_post_types' );
+		$post_types = false;
+
+		if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK ) {
+
+			$all_post_types = get_site_option( 'ep_post_types' );
+
+			if ( is_array( $all_post_types ) ) {
+
+				$current_site = get_current_blog_id();
+
+				if ( isset( $all_post_types[ $current_site ] ) && is_array( $all_post_types[ $current_site ] ) ) {
+					$post_types = $all_post_types[ $current_site ];
+				}
+			}
+		} else {
+
+			$post_types = get_option( 'ep_post_types' );
+
+		}
 
 		if ( false === $post_types ) {
 			$post_types = get_post_types( array( 'exclude_from_search' => false ) );
@@ -140,7 +158,25 @@ class EP_Config {
 	 */
 	public function get_searchable_post_types() {
 
-		$post_types = get_option( 'ep_post_types' );
+		$post_types = false;
+
+		if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK ) {
+
+			$all_post_types = get_site_option( 'ep_post_types' );
+
+			if ( is_array( $all_post_types ) ) {
+
+				$current_site = get_current_blog_id();
+
+				if ( isset( $all_post_types[ $current_site ] ) && is_array( $all_post_types[ $current_site ] ) ) {
+					$post_types = $all_post_types[ $current_site ];
+				}
+			}
+		} else {
+
+			$post_types = get_option( 'ep_post_types' );
+
+		}
 
 		if ( false === $post_types ) {
 			$post_types = get_post_types( array( 'exclude_from_search' => false ) );
