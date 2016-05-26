@@ -143,7 +143,9 @@ class EP_Settings {
 					'total_posts'         => isset( $total_posts['total'] ) ? $total_posts['total'] : 0,
 					'synced_posts'        => $synced_posts,
 					'failed_text'         => esc_html__( 'A failure has occured. Please try the indexing operation again and if the error persists contact your website administrator.', 'elasticpress' ),
-					'complete_text'       => esc_html__( 'Index complete', 'elasticpress' ) )
+					'complete_text'       => esc_html__( 'Index complete', 'elasticpress' ),
+					'post_type_nonce'     => wp_create_nonce( 'ep_post_type_nonce' ),
+				)
 			);
 
 		}
