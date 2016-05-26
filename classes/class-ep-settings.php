@@ -388,18 +388,7 @@ class EP_Settings {
 	 */
 	public function setting_callback_post_types() {
 
-		echo '<ul>';
-
-		$post_types_selected  = ep_get_indexable_post_types();
-		$post_types_available = get_post_types( array( 'public' => true ) );
-
-		foreach ( $post_types_available as $post_type_slug ) {
-
-			$post_type = get_post_type_object( $post_type_slug );
-
-			echo '<li><input type="checkbox" name="ep_post_types[' . esc_attr( $post_type_slug ) . ']" value="' . esc_attr( $post_type_slug ) . '" ' . checked( true, in_array( $post_type_slug, $post_types_selected, true ), false ) . '>' . esc_html( $post_type->labels->singular_name ) . '</li>';
-
-		}
+		echo '<ul id="ep_post_type_list">';
 
 		echo '</ul>';
 		echo '</p>';
