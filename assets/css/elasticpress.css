@@ -1,3 +1,6 @@
+.settings_page_elasticpress span.dashicons {
+  margin: 2px 0 0 1px; }
+
 #indexprogresss {
   display: none; }
   #indexprogresss:after {
@@ -58,6 +61,6 @@
   #ep_stats ul li {
     margin-left: 20px; }
 
-#ep_restart_index {
-  display: none; }
+#ep_pause_index {
+  float: right; }
 /*# sourceMappingURL=elasticpress.css.map */
