@@ -342,7 +342,6 @@ class EP_Settings {
 	 */
 	public function setting_callback_post_types() {
 
-		echo '<p class="ep-actions">';
 		echo '<ul>';
 
 		$post_types_selected  = ep_get_indexable_post_types();
