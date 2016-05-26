@@ -310,29 +310,48 @@
 		 *
 		 * @param event
 		 */
-		changePostTypeSite: function (event) {
+		changePostTypeSite : function ( event ) {
 			event.preventDefault();
 
-			console.log(  elasticPress.post_type_site.val() )
-
 			var data = {
-				action: 'ep_get_site_post_types',
-				nonce : ep.post_type_nonce,
-				site  : elasticPress.post_type_site.val()
+				action : 'ep_get_site_post_types',
+				nonce  : ep.post_type_nonce,
+				site   : elasticPress.post_type_site.val()
 			};
 
 			//call the ajax
 			$.ajax(
 				{
-					url     : ajaxurl,
-					type    : 'POST',
-					data    : data,
-					complete: function (response) {
+					url      : ajaxurl,
+					type     : 'POST',
+					data     : data,
+					complete : function ( response ) {
 
-						console.log( response );
+						if ( response.responseJSON && response.responseJSON.data ) {
 
+							for ( var field in response.responseJSON.data ) {
+
+								if ( response.responseJSON.data.hasOwnProperty( field ) ) {
+
+									var formListItem     = $( '<li>' );
+									var formInputElement = $( '<input>' );
+									formInputElement.attr( 'type', 'checkbox' );
+									formInputElement.attr( 'name', 'ep_post_types[' + field + ']' );
+									formInputElement.attr( 'value', field );
+
+									if ( true === response.responseJSON.data[field].selected ) {
+										formInputElement.attr( 'checked', 'checked' );
+									}
+
+									$( formListItem ).append( formInputElement );
+									$( formListItem ).append( response.responseJSON.data[field].name );
+
+									$( '#ep_post_type_list' ).append( formListItem );
+
+								}
+							}
+						}
 					}
-
 				}
 			);
 
