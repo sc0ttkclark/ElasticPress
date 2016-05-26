@@ -182,6 +182,7 @@ class EP_Settings {
 		}
 
 		add_settings_section( 'ep_settings_section_main', '', '__return_empty_string', 'elasticpress' );
+		add_settings_section( 'ep_settings_section_post_types', '', '__return_empty_string', 'elasticpress_post_types' );
 
 		add_settings_field( 'ep_host', esc_html__( 'Elasticsearch Host:', 'elasticpress' ), array(
 			$this,
@@ -193,8 +194,14 @@ class EP_Settings {
 			'setting_callback_activate',
 		), 'elasticpress', 'ep_settings_section_main' );
 
+		add_settings_field( 'ep_post_types', esc_html__( 'Select Post Types To Search:', 'elasticpress' ), array(
+			$this,
+			'setting_callback_post_types',
+		), 'elasticpress_post_types', 'ep_settings_section_post_types' );
+
 		register_setting( 'elasticpress', 'ep_host', array( $this, 'sanitize_ep_host' ) );
 		register_setting( 'elasticpress', 'ep_activate', array( $this, 'sanitize_ep_activate' ) );
+		register_setting( 'elasticpress_post_types', 'ep_post_types', array( $this, 'sanitize_ep_post_types' ) );
 
 	}
 
@@ -278,6 +285,35 @@ class EP_Settings {
 	}
 
 	/**
+	 * Sanitize ep_post_types option
+	 *
+	 * Sanitizes the ep_post_types inputed from the dashboard.
+	 *
+	 * @since 2.0
+	 *
+	 * @param string $input input items.
+	 *
+	 * @return string Sanitized input items
+	 */
+	public function sanitize_ep_post_types( $input ) {
+
+		$post_types = get_post_types( array( 'public' => true ) );
+
+		if ( ! is_array( $input ) ) {
+			return false;
+		}
+
+		foreach ( $input as $post_type ) {
+			if ( ! in_array( $post_type, $post_types, true ) ) {
+				unset ( $input[ $post_type ] );
+			}
+		}
+
+		return $input;
+
+	}
+
+	/**
 	 * Setting callback
 	 *
 	 * Callback for settings field. Displays textbox to specify the EP_HOST.
@@ -293,6 +329,34 @@ class EP_Settings {
 			$disabled = '';
 		}
 		echo '<input type="checkbox" value="1" name="ep_activate" id="ep_activate"' . checked( true, ep_is_activated(), false ) . ' ' . $disabled  . '/>';
+
+	/**
+	 * Setting callback
+	 *
+	 * Callback for settings field. Displays checkboxes for the searched post types.
+	 *
+	 * @since 2.0
+	 *
+	 * @return void
+	 */
+	public function setting_callback_post_types() {
+
+		echo '<p class="ep-actions">';
+		echo '<ul>';
+
+		$post_types_selected  = ep_get_indexable_post_types();
+		$post_types_available = get_post_types( array( 'public' => true ) );
+
+		foreach ( $post_types_available as $post_type_slug ) {
+
+			$post_type = get_post_type_object( $post_type_slug );
+
+			echo '<li><input type="checkbox" name="ep_post_types[' . esc_attr( $post_type_slug ) . ']" value="' . esc_attr( $post_type_slug ) . '" ' . checked( true, in_array( $post_type_slug, $post_types_selected, true ), false ) . '>' . esc_html( $post_type->labels->singular_name ) . '</li>';
+
+		}
+
+		echo '</ul>';
+		echo '</p>';
 
 	}
 
