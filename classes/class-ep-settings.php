@@ -69,12 +69,12 @@ class EP_Settings {
 		// Enqueue more easily debugged version if applicable.
 		if ( defined( 'WP_DEBUG' ) && true === WP_DEBUG ) {
 
-			wp_register_script( 'ep_admin', EP_URL . 'assets/js/elasticpress-admin.js', array( 'jquery', 'jquery-ui-progressbar' ), EP_VERSION );
+			wp_register_script( 'ep_admin', EP_URL . 'assets/js/elasticpress-admin.js', array( 'jquery', 'jquery-ui-progressbar' ), EP_VERSION, true );
 			wp_register_style( 'ep_styles', EP_URL . 'assets/css/elasticpress.css', array(), EP_VERSION );
 
 		} else {
 
-			wp_register_script( 'ep_admin', EP_URL . 'assets/js/elasticpress-admin.min.js', array( 'jquery', 'jquery-ui-progressbar' ), EP_VERSION );
+			wp_register_script( 'ep_admin', EP_URL . 'assets/js/elasticpress-admin.min.js', array( 'jquery', 'jquery-ui-progressbar' ), EP_VERSION, true );
 			wp_register_style( 'ep_styles', EP_URL . 'assets/css/elasticpress.min.css', array(), EP_VERSION );
 
 		}

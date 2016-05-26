@@ -1,92 +1,61 @@
-jQuery( document ).ready( function ( $ ) {
+(function ($) {
 
-	var pauseIndexing    = false;
-	var epSitesRemaining = 0;
-	var epTotalToIndex   = 0;
-	var epTotalIndexed   = 0;
-	var epSitesCompleted = 0;
+	var elasticPress = {
+		pauseIndexing       : false,
+		epSitesRemaining    : 0,
+		epTotalToIndex      : 0,
+		epTotalIndexed      : 0,
+		epSitesCompleted    : 0,
 
-	// The run index button
-	var run_index_button = $( '#ep_run_index' );
+		// The run index button
+		run_index_button    : $('#ep_run_index'),
 
-	// The pause index button
-	var pause_index_button = $( '#ep_pause_index' );
+		// The pause index button
+		pause_index_button  : $('#ep_pause_index'),
 
-	// The restart index button
-	var restart_index_button = $( '#ep_restart_index' );
+		// The restart index button
+		restart_index_button: $('#ep_restart_index'),
 
-	// The keep active Elasticsearch integration checkbox.
-	var keep_active_checkbox = $( '#ep_keep_active' );
+		// The keep active Elasticsearch integration checkbox.
+		keep_active_checkbox: $('#ep_keep_active'),
 
-	/**
-	 * Update the progress bar every 3 seconds
-	 */
-	var performIndex = function ( resetBar, button, stopBtn, restartBtn, keepActiveCheckbox ) {
+		// Side drop down for newtwrok.
+		site_selector       : $('#ep_site_select'),
 
-		if ( pauseIndexing ) {
-			return;
-		}
+		status            : $('#progressstats'),
+		bar               : $('#progressbar'),
+		index_progress_box: $('#indexprogresss'),
 
-		$( button ).val( ep.running_index_text ).removeClass( 'button-primary' ).attr( 'disabled', true );
-		$( keepActiveCheckbox ).attr( 'disabled', true );
+		/**
+		 * Update the progress bar every 3 seconds
+		 */
+		performIndex: function (resetBar) {
 
-		$( stopBtn ).removeClass( 'hidden' );
-		$( restartBtn ).addClass( 'hidden' );
-
-		//Make sure the progress bar is showing
-		var bar    = $( '#progressbar' ),
-		    status = $( '#progressstats' );
-
-		bar.show();
-
-		if ( resetBar ) {
-
-			var progress = 0;
-
-			if ( parseInt( ep.total_posts ) > 0 ) {
-
-				progress = parseFloat( ep.synced_posts ) / parseFloat( ep.total_posts );
-				status.text( ep.synced_posts + '/' + ep.total_posts + ' ' + ep.items_indexed_suff );
-
+			if (this.pauseIndexing) {
+				return;
 			}
 
-			bar.progressbar(
-				{
-					value : progress * 100
-				}
-			);
+			$(this.pause_index_button).val(ep.running_index_text).removeClass('button-primary').attr('disabled', true);
+			$(this.keep_active_checkbox).attr('disabled', true);
 
-		}
+			$(this.restart_index_button).removeClass('hidden');
+			$(this.pause_index_button).addClass('hidden');
 
-		processIndex( bar, button, stopBtn, restartBtn, status, keepActiveCheckbox );
+			this.showProgressBar();
+			this.processIndex();
 
-	};
-
-	/**
-	 * Set our variable to pause indexing
-	 */
-	var pauseIndex = function( pauseBtn, indexBtn, restartBtn, keepActiveCheckbox ) {
-
-		var btn = $( pauseBtn );
-		var paused = btn.data( 'paused' );
-
-		if ( paused === 'enabled' ) {
-
-			btn.val( ep.index_pause_text ).data( 'paused', 'disabled' );
-
-			pauseIndexing = false;
-
-			performIndex( false, indexBtn, pauseBtn, restartBtn, keepActiveCheckbox );
-
-		} else {
-
+		},
+		/**
+		 * Send request to server and process response
+		 */
+		processIndex: function (bar, button, stopBtn, restartBtn, status) {
+			var self = this;
 			var data = {
-				action      : 'ep_pause_index',
-				keep_active : keepActiveCheckbox.is( ':checked' ),
-				nonce       :  ep.pause_nonce
+				action: 'ep_launch_index',
+				nonce : ep.nonce
 			};
 
-			// call the ajax request to re-enable ElasticPress
+			//call the ajax
 			$.ajax(
 				{
 					url     : ajaxurl,
@@ -94,266 +63,258 @@ jQuery( document ).ready( function ( $ ) {
 					data    : data,
 					complete: function (response) {
 
-						btn.val( ep.index_resume_text ).data( 'paused', 'enabled' );
-						$( indexBtn ).val( ep.index_paused_text ).attr( 'disabled', true );
-						$( restartBtn ).removeClass( 'hidden' );
+						// Handle returned error appropriately.
+						if ('undefined' === typeof response.responseJSON || 'undefined' === typeof response.responseJSON.data) {
 
-						pauseIndexing = true;
+							self.status.text(ep.failed_text);
+							$(self.run_index_button).val(ep.index_complete_text).attr('disabled', false);
+							$(self.pause_index_button).addClass('hidden');
+							$(self.restart_index_button).addClass('hidden');
+							self.index_progress_box.fadeOut('slow');
+
+						} else {
+
+							var sitesCompletedText = '';
+
+							if (0 === response.responseJSON.data.is_network) {
+
+								self.epTotalToIndex = response.responseJSON.data.ep_posts_total;
+								self.epTotalIndexed = response.responseJSON.data.ep_posts_synced;
+
+							} else {
+
+								if (self.epSitesRemaining !== response.responseJSON.data.ep_sites_remaining) {
+
+									self.epSitesRemaining = response.responseJSON.data.ep_sites_remaining;
+									self.epTotalToIndex += response.responseJSON.data.ep_posts_total;
+									self.epSitesCompleted++;
+
+								}
+
+								sitesCompletedText = self.epSitesCompleted + ep.sites;
+								self.epTotalIndexed += response.responseJSON.data.ep_current_synced;
+
+							}
+
+							var progress = parseFloat(elasticPress.epTotalIndexed) / parseFloat(elasticPress.epTotalToIndex);
+
+
+							console.log(progress);
+							self.bar.progressbar(
+								{
+									value: progress * 100
+								}
+							);
+
+							self.status.text(self.epTotalIndexed + '/' + self.epTotalToIndex + ' ' + ep.items_indexed + sitesCompletedText);
+
+							if (1 == response.responseJSON.data.ep_sync_complete) { //indexing complete
+
+								self.bar.progressbar(
+									{
+										value: 100
+									}
+								);
+
+								setTimeout(function () {
+
+									self.index_progress_box.fadeOut('slow');
+									self.status.html(ep.complete_text);
+									self.run_index_button.val(ep.index_complete_text).attr('disabled', false);
+									self.pause_index_button.addClass('hidden');
+									self.restart_index_button.addClass('hidden');
+									self.resetIndex();
+
+								}, 500);
+
+							} else {
+
+								self.performIndex(false );
+
+							}
+						}
+					}
+				}
+			);
+
+		},
+
+		/**
+		 * Set our variable to pause indexing
+		 */
+		pauseIndex: function ( ) {
+
+			var self = this;
+			var paused = this.pause_index_button.data('paused');
+
+			if (paused === 'enabled') {
+
+				self.pause_index_button.val(ep.index_pause_text).data('paused', 'disabled');
+
+				self.pauseIndexing = false;
+
+				self.performIndex( false );
+
+			} else {
+
+				var data = {
+					action     : 'ep_pause_index',
+					keep_active: keepActiveCheckbox.is(':checked'),
+					nonce      : ep.pause_nonce
+				};
+
+				// call the ajax request to re-enable ElasticPress
+				$.ajax(
+					{
+						url     : ajaxurl,
+						type    : 'POST',
+						data    : data,
+						complete: function (response) {
+
+							self.pause_index_button.val(ep.index_resume_text).data('paused', 'enabled');
+							self.run_index_button.val(ep.index_paused_text).attr('disabled', true);
+							self.restart_index_button.removeClass('hidden');
+
+							self.pauseIndexing = true;
+
+						}
+					}
+				);
+
+			}
+		},
+
+		/**
+		 * Allow indexing to be restarted.
+		 */
+		restartIndex: function ( ) {
+			var self = this;
+			var data = {
+				action: 'ep_restart_index',
+				nonce : ep.restart_nonce
+			};
+
+			// call the ajax request to un-pause indexing
+			$.ajax(
+				{
+					url     : ajaxurl,
+					type    : 'POST',
+					data    : data,
+					complete: function (response) {
+
+						self.resetIndex();
+
+						self.restart_index_button.addClass('hidden');
+						self.pause_index_button.val(ep.index_pause_text).data('paused', 'disabled').addClass('hidden');
+						self.run_index_button.val(ep.index_complete_text).attr('disabled', false);
+						self.keep_active_checkbox.attr('disabled', false);
+
+						self.status.text('');
+						self.index_progress_box.fadeOut('slow');
+
+						elasticPress.pauseIndexing = false;
 
 					}
 				}
 			);
 
-		}
+		},
+		// Resets index counts
+		resetIndex  : function () {
 
-	};
+			this.epSitesRemaining = 0;
+			this.epTotalToIndex = 0;
+			this.epTotalIndexed = 0;
 
-	/**
-	 * Allow indexing to be restarted.
-	 */
-	var restartIndex = function( restartBtn, pauseBtn, indexBtn, keepActiveCheckbox ) {
+		},
 
-		var data = {
-			action : 'ep_restart_index',
-			nonce :  ep.restart_nonce
-		};
+		/**
+		 * Show the progress bar when indexing is paused.
+		 */
+		showProgressBar: function () {
 
-		// call the ajax request to un-pause indexing
-		$.ajax(
-			{
-				url     : ajaxurl,
-				type    : 'POST',
-				data    : data,
-				complete: function (response) {
+			this.index_progress_box.show();
 
-					resetIndex();
+			var progress = parseFloat(ep.synced_posts) / parseFloat(ep.total_posts);
 
-					$( restartBtn ).addClass( 'hidden' );
-					$( pauseBtn ).val( ep.index_pause_text ).data( 'paused', 'disabled' ).addClass( 'hidden' );
-					$( indexBtn ).val( ep.index_complete_text ).addClass( 'button-primary' ).attr( 'disabled', false );
-					$( keepActiveCheckbox ).attr( 'disabled', false );
-
-					$( '#progressstats' ).text( '' );
-					$( '#progressbar' ).fadeOut( 'slow' );
-
-					pauseIndexing = false;
-
+			this.bar.progressbar(
+				{
+					value: progress * 100
 				}
-			}
-		);
+			);
 
-	};
+			this.status.text(ep.synced_posts + '/' + ep.total_posts + ' ' + ep.items_indexed);
+		},
 
-	// Resets index counts
-	var resetIndex = function () {
+		changeSite: function (event) {
+			event.preventDefault();
 
-		epSitesRemaining = 0;
-		epTotalToIndex   = 0;
-		epTotalIndexed   = 0;
+			var data = {
+				action: 'ep_get_site_stats',
+				nonce : ep.stats_nonce,
+				site  : elasticPress.site_selector.val()
+			};
 
-	};
+			//call the ajax
+			$.ajax(
+				{
+					url     : ajaxurl,
+					type    : 'POST',
+					data    : data,
+					complete: function (response) {
 
-	/**
-	 * Send request to server and process response
-	 */
-	var processIndex = function ( bar, button, stopBtn, restartBtn, status, keepActiveCheckbox ) {
+						$('#ep_site_stats').html(response.responseJSON.data);
 
-		var data = {
-			action      : 'ep_launch_index',
-			keep_active : keepActiveCheckbox.is( ':checked' ),
-			nonce       :  ep.nonce
-		};
-
-		//call the ajax
-		$.ajax(
-			{
-				url :      ajaxurl,
-				type :     'POST',
-				data :     data,
-				complete : function ( response ) {
-
-					// Handle returned error appropriately.
-					if ( 'undefined' === typeof response.responseJSON || 'undefined' === typeof response.responseJSON.data ) {
-
-						$( '#progressstats' ).text( ep.failed_text );
-						$( button ).val( ep.index_complete_text ).addClass( 'button-primary' ).attr( 'disabled', false );
-						$( keepActiveCheckbox ).attr( 'disabled', false );
-						$( stopBtn ).addClass( 'hidden' );
-						$( restartBtn ).addClass( 'hidden' );
-						$( '#progressbar' ).fadeOut( 'slow' );
-
-					} else {
-
-						var sitesCompletedText = '';
-
-						if ( 0 === response.responseJSON.data.is_network ) {
-
-							epTotalToIndex = response.responseJSON.data.ep_posts_total;
-							epTotalIndexed = response.responseJSON.data.ep_posts_synced;
-
-						} else {
-
-							if ( epSitesRemaining !== response.responseJSON.data.ep_sites_remaining ) {
-
-								epSitesRemaining = response.responseJSON.data.ep_sites_remaining;
-								epTotalToIndex += response.responseJSON.data.ep_posts_total;
-								epSitesCompleted ++;
-
-							}
-
-							sitesCompletedText = epSitesCompleted + ep.sites;
-							epTotalIndexed += response.responseJSON.data.ep_current_synced;
-
-						}
-
-						var progress = parseFloat( epTotalIndexed ) / parseFloat( epTotalToIndex );
-
-						bar.progressbar(
-							{
-								value : progress * 100
-							}
-						);
-
-						status.text( epTotalIndexed + '/' + epTotalToIndex + ' ' + ep.items_indexed + sitesCompletedText );
-
-						if ( 1 == response.responseJSON.data.ep_sync_complete ) { //indexing complete
-
-							bar.progressbar(
-								{
-									value : 100
-								}
-							);
-
-							setTimeout( function () {
-
-								$( '#progressbar' ).fadeOut( 'slow' );
-								$( '#progressstats' ).html( ep.complete_text );
-								$( button ).val( ep.index_complete_text ).addClass( 'button-primary' ).attr( 'disabled', false );
-								$( keepActiveCheckbox ).attr( 'disabled', false );
-								$( stopBtn ).addClass( 'hidden' );
-								$( restartBtn ).addClass( 'hidden' );
-								resetIndex();
-
-							}, 1000 );
-
-						} else {
-
-							performIndex( false, button, stopBtn, restartBtn, keepActiveCheckbox );
-
-						}
 					}
+
 				}
+			);
+		},
+
+		addEventListeners: function () {
+			var self = this;
+			/**
+			 * Process indexing operation
+			 */
+			self.run_index_button.on('click', function (event) {
+
+				event.preventDefault();
+
+				elasticPress.resetIndex();
+
+				self.status.text(ep.running_index_text);
+				elasticPress.performIndex(true ); //start the polling
+			});
+			/**
+			 * Process the pause index operation
+			 */
+			self.pause_index_button.on('click', function (event) {
+				event.preventDefault();
+				elasticPress.pauseIndex();
+			});
+			/**
+			 * Process the restart index operation
+			 */
+			self.restart_index_button.on('click', function (event) {
+				event.preventDefault();
+				elasticPress.restartIndex();
+			});
+			self.site_selector.on('change', this.changeSite);
+		},
+
+		init: function () {
+			if (1 == ep.index_running && 1 != ep.paused) {
+				elasticPress.performIndex(true);
 			}
-		);
 
-	};
-
-	/**
-	 * Show the progress bar when indexing is paused.
-	 */
-	var showProgressBar = function() {
-
-		var bar    = $( '#progressbar' ),
-			status = $( '#progressstats' );
-
-		bar.show();
-
-		var progress = parseFloat( ep.synced_posts ) / parseFloat( ep.total_posts );
-
-		bar.progressbar(
-			{
-				value : progress * 100
+			if (1 == ep.index_running && 1 == ep.paused) {
+				this.showProgressBar();
 			}
-		);
 
-		status.text( ep.synced_posts + '/' + ep.total_posts + ' ' + ep.items_indexed );
-
-	};
-
-	/**
-	 * Start the poll if we need it
-	 */
-	if ( 1 == ep.index_running && 1 != ep.paused ) {
-		performIndex( true, run_index_button, pause_index_button, restart_index_button, keep_active_checkbox );
-	}
-
-	if ( 1 == ep.index_running && 1 == ep.paused ) {
-		showProgressBar();
-	}
-
-	/**
-	 * Process indexing operation
-	 */
-	run_index_button.click( function ( event ) {
-
-		event.preventDefault();
-
-		resetIndex();
-
-		var button = this;
-
-		if ( ! $( button ).hasClass( 'button-primary' ) ) {
-			return;
+			this.addEventListeners();
 		}
 
-		$( '#progressstats' ).text( ep.running_index_text );
-		performIndex( true, button, pause_index_button, restart_index_button, keep_active_checkbox ); //start the polling
+	};
 
-	} );
-
-	/**
-	 * Process the pause index operation
-	 */
-	pause_index_button.click( function ( event ) {
-
-		event.preventDefault();
-
-		pauseIndex( this, run_index_button, restart_index_button, keep_active_checkbox );
-
-	} );
-
-	/**
-	 * Process the restart index operation
-	 */
-	restart_index_button.click( function ( event ) {
-
-		event.preventDefault();
-
-		restartIndex( this, pause_index_button, run_index_button, keep_active_checkbox );
-
-	} );
-
-	// The stats selector
-	var selector = $( '#ep_site_select' );
-
-	/**
-	 * Process changing site stats.
-	 */
-	selector.change( function ( event ) {
-
-		event.preventDefault();
-
-		var data = {
-			action : 'ep_get_site_stats',
-			nonce :  ep.stats_nonce,
-			site :   selector.val()
-		};
-
-		//call the ajax
-		$.ajax(
-			{
-				url :      ajaxurl,
-				type :     'POST',
-				data :     data,
-				complete : function ( response ) {
-
-					$( '#ep_site_stats' ).html( response.responseJSON.data );
-
-				}
-
-			}
-		);
-
-	} );
-
-} );
+	elasticPress.init();
+})(jQuery);
