@@ -58,6 +58,9 @@ class EP_Settings {
 		add_action( 'admin_enqueue_scripts', array( $this, 'action_admin_enqueue_scripts' ) );
 
 		add_action( 'admin_init', array( $this, 'action_admin_init' ) );
+
+		add_action( 'wp_ajax_ep_get_site_post_types', array( $this, 'action_wp_ajax_ep_get_site_post_types' ) );
+
 	}
 
 	/**
@@ -244,6 +247,23 @@ class EP_Settings {
 			'elasticpress',
 			array( $this, 'settings_page' )
 		);
+	}
+
+	/**
+	 * Action wp_ajax_ep_get_site_post_types
+	 *
+	 * Send post types for display on the form.
+	 *
+	 * @since 2.0
+	 *
+	 * @return void
+	 */
+	public function action_wp_ajax_ep_get_site_post_types() {
+
+		check_admin_referer( 'ep_post_type_nonce', 'nonce' );
+
+		return wp_send_json_success( 'test' );
+
 	}
 
 	/**
