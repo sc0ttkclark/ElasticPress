@@ -136,7 +136,10 @@ if ( $stats['status'] ) {
 		'code' => array(),
 	);
 
-	echo '<span class="dashicons dashicons-no" style="color:red;"></span> <strong>' . esc_html__( 'ERROR:', 'elasticpress' ) . '</strong> ' . wp_kses( $stats['msg'], $allowed_tags );
+	echo '<span class="dashicons dashicons-no" style="color:red;"></span> <strong>' . esc_html__( 'ERROR:', 'elasticpress' ) . '</strong> ' . wp_kses( $stats['msg'], array(
+			'p'    => array(),
+			'code' => array(),
+		) );
 
 }
 

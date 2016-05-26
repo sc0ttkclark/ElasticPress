@@ -26,6 +26,15 @@ class EP_Settings {
 	var $options_page;
 
 	/**
+	 * Check host results
+	 *
+	 * @since 1.9
+	 *
+	 * @var object
+	 */
+	static $host;
+
+	/**
 	 * Register WordPress hooks
 	 *
 	 * Loads initial actions.
@@ -35,24 +44,20 @@ class EP_Settings {
 	 * @return EP_Settings
 	 */
 	public function __construct() {
-
-		ep_check_host();
+		self::$host = ep_check_host();
 
 		if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK ) { // Must be network admin in multisite.
-
 			add_action( 'network_admin_menu', array( $this, 'action_admin_menu' ) );
-
+			add_action( 'network_admin_notices', array( $this, 'admin_notices' ) );
 		} else {
-
 			add_action( 'admin_menu', array( $this, 'action_admin_menu' ) );
-
+			add_action( 'admin_notices', array( $this, 'admin_notices' ) );
 		}
 
 		// Add JavaScripts.
 		add_action( 'admin_enqueue_scripts', array( $this, 'action_admin_enqueue_scripts' ) );
 
 		add_action( 'admin_init', array( $this, 'action_admin_init' ) );
-
 	}
 
 	/**
@@ -69,12 +74,12 @@ class EP_Settings {
 		// Enqueue more easily debugged version if applicable.
 		if ( defined( 'WP_DEBUG' ) && true === WP_DEBUG ) {
 
-			wp_register_script( 'ep_admin', EP_URL . 'assets/js/elasticpress-admin.js', array( 'jquery', 'jquery-ui-progressbar' ), EP_VERSION );
+			wp_register_script( 'ep_admin', EP_URL . 'assets/js/elasticpress-admin.js', array( 'jquery', 'jquery-ui-progressbar' ), EP_VERSION, true );
 			wp_register_style( 'ep_styles', EP_URL . 'assets/css/elasticpress.css', array(), EP_VERSION );
 
 		} else {
 
-			wp_register_script( 'ep_admin', EP_URL . 'assets/js/elasticpress-admin.min.js', array( 'jquery', 'jquery-ui-progressbar' ), EP_VERSION );
+			wp_register_script( 'ep_admin', EP_URL . 'assets/js/elasticpress-admin.min.js', array( 'jquery', 'jquery-ui-progressbar' ), EP_VERSION, true );
 			wp_register_style( 'ep_styles', EP_URL . 'assets/css/elasticpress.min.css', array(), EP_VERSION );
 
 		}
@@ -138,8 +143,7 @@ class EP_Settings {
 					'total_posts'         => isset( $total_posts['total'] ) ? $total_posts['total'] : 0,
 					'synced_posts'        => $synced_posts,
 					'failed_text'         => esc_html__( 'A failure has occured. Please try the indexing operation again and if the error persists contact your website administrator.', 'elasticpress' ),
-					'complete_text'       => wp_kses( __( 'Index complete <a href="">Refresh the stats</a>', 'elasticpress' ), $allowed_link ),
-				)
+					'complete_text'       => esc_html__( 'Index complete', 'elasticpress' ) )
 			);
 
 		}
@@ -179,7 +183,11 @@ class EP_Settings {
 				$this->sanitize_ep_activate( false );
 
 			}
+			self::$host = ep_check_host();
 		}
+
+		//Notices
+		add_filter( 'ep_admin_settings_error_notices', array( $this, 'error_notices' ) );
 
 		add_settings_section( 'ep_settings_section_main', '', '__return_empty_string', 'elasticpress' );
 		add_settings_section( 'ep_settings_section_post_types', '', '__return_empty_string', 'elasticpress_post_types' );
@@ -388,7 +396,17 @@ class EP_Settings {
 			$host      = EP_HOST;
 		}
 
-		echo '<input name="ep_host" id="ep_host"  class="regular-text" type="text" value="' . esc_attr( $host ) . '" ' . esc_attr( $read_only ) . '>';
+		$site_stats_id = null;
+
+		if ( is_multisite() && ( ! defined( 'EP_IS_NETWORK' ) || ! EP_IS_NETWORK ) ) {
+			$site_stats_id = get_current_blog_id();
+		}
+
+		$stats = ep_get_index_status( $site_stats_id );
+
+		$status = ( ! is_wp_error(  $stats['status'] ) && ! is_wp_error( self::$host ) ) ? '<span class="dashicons dashicons-yes" style="color:green;"></span>' : '<span class="dashicons dashicons-no" style="color:red;"></span>';
+
+		echo '<input name="ep_host" id="ep_host"  class="regular-text" type="text" value="' . esc_attr( $host ) . '" ' . esc_attr( $read_only ) . '>' . $status;
 
 	}
 
@@ -474,5 +492,66 @@ class EP_Settings {
 		}
 
 		return add_query_arg( wp_parse_args( array( 'tab' => $tab ), $defaults ), $url );
+	}
+
+	public function error_notices( $errors ){
+		$site_stats_id = null;
+
+		if ( is_multisite() && ( ! defined( 'EP_IS_NETWORK' ) || ! EP_IS_NETWORK ) ) {
+			$site_stats_id = get_current_blog_id();
+		}
+
+		$stats = ep_get_index_status( $site_stats_id );
+		$current_host = ep_get_host( true );
+
+		if( is_wp_error( self::$host ) ){
+			$errors[] = esc_html__( 'A host has not been set or is set but cannot be contacted. A proper host must be set before running an index.', 'elasticpress' );
+		} elseif( is_wp_error( $current_host ) ){
+			$errors[] = esc_html__( 'Current host is set but cannot be contacted. Please contact the server administrator.', 'elasticpress' );
+		} elseif( ! is_wp_error( self::$host ) && isset( $stats['msg'] ) ){
+			$errors[] = wp_kses( $stats['msg'], array(
+				'p'    => array(),
+				'code' => array(),
+			) );
+		}
+		return $errors;
+	}
+
+	/**
+	 * Use WordPress notices to inform user of errors and successful actions
+	 *
+	 * @since 2.0
+	 */
+	public function admin_notices(){
+
+		if ( isset( get_current_screen()->id ) && false === strpos( get_current_screen()->id, 'settings_page_elasticpress' )  ) {
+			return;
+		}
+		/**
+		 * Allow other features to hook into the ElasticPress Error notices
+		 *
+		 * @since 2.0
+		 */
+		$errors = apply_filters( 'ep_admin_settings_error_notices', array() );
+		/**
+		 * Allow other features to hook into the ElasticPress Success notices
+		 *
+		 * @since 2.0
+		 */
+		$success = apply_filters( 'ep_admin_settings_success_notices', array() );
+
+		if( !empty( $errors ) ){
+			foreach ( $errors as $message ) {
+				printf( '<div class="notice notice-error ep-error"><p>%s</p></div>', $message );
+			}
+		}
+
+		if( !empty( $success ) ){
+			foreach ( $success as $message ) {
+				printf( '<div class="notice notice-success"><p>%s</p></div>', $message );
+			}
+		}
+
+		echo '<div class="notice notice-success ep-notice hidden"><p></p></div>';
 	}
 }
