@@ -329,6 +329,7 @@ class EP_Settings {
 			$disabled = '';
 		}
 		echo '<input type="checkbox" value="1" name="ep_activate" id="ep_activate"' . checked( true, ep_is_activated(), false ) . ' ' . $disabled  . '/>';
+	}
 
 	/**
 	 * Setting callback
