@@ -122,7 +122,12 @@ class EP_Config {
 	 * @return mixed|void
 	 */
 	public function get_indexable_post_types() {
-		$post_types = get_post_types( array( 'exclude_from_search' => false ) );
+
+		$post_types = get_option( 'ep_post_types' );
+
+		if ( false === $post_types ) {
+			$post_types = get_post_types( array( 'exclude_from_search' => false ) );
+		}
 
 		return apply_filters( 'ep_indexable_post_types', $post_types );
 	}
@@ -134,7 +139,12 @@ class EP_Config {
 	 * @return mixed|void
 	 */
 	public function get_searchable_post_types() {
-		$post_types = get_post_types( array( 'exclude_from_search' => false ) );
+
+		$post_types = get_option( 'ep_post_types' );
+
+		if ( false === $post_types ) {
+			$post_types = get_post_types( array( 'exclude_from_search' => false ) );
+		}
 
 		return apply_filters( 'ep_searchable_post_types', $post_types );
 	}
