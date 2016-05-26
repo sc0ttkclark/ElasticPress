@@ -424,7 +424,7 @@ class EP_Settings {
 		if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK ){
 			$url = network_admin_url( 'settings.php' );
 		} else {
-			$url = admin_ur( 'settings.php' );
+			$url = admin_url( 'options-general.php' );
 		}
 
 		return add_query_arg( wp_parse_args( array( 'tab' => $tab ), $defaults ), $url );
