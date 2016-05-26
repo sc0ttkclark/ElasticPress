@@ -26,7 +26,7 @@ if ( true === $network ) {
 
 	echo '<td>';
 	echo '<div id="ep_site_sel">';
-	echo '<select name="ep_site_select" id="ep_site_select">';
+	echo '<select name="ep_site_select_post_type" id="ep_site_select_post_type">';
 	echo '<option value="0">' . esc_html__( 'All Sites', 'elasticpress' ) . '</option>';
 
 	$site_list = get_site_transient( 'ep_site_list_for_stats' );
