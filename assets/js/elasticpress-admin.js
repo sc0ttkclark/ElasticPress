@@ -23,6 +23,9 @@
 		// Side drop down for network
 		site_selector       : $('#ep_site_select'),
 
+		// Site drop down for network post type screen
+		post_type_site : $('#ep_site_select_post_type'),
+
 		// Progress bar status box
 		status            : $('#progressstats'),
 
@@ -302,6 +305,39 @@
 			);
 		},
 
+		/**
+		 * Toggle between site stats on network screen
+		 *
+		 * @param event
+		 */
+		changePostTypeSite: function (event) {
+			event.preventDefault();
+
+			console.log(  elasticPress.post_type_site.val() )
+
+			var data = {
+				action: 'ep_get_site_post_types',
+				nonce : ep.post_type_nonce,
+				site  : elasticPress.post_type_site.val()
+			};
+
+			//call the ajax
+			$.ajax(
+				{
+					url     : ajaxurl,
+					type    : 'POST',
+					data    : data,
+					complete: function (response) {
+
+						console.log( response );
+
+					}
+
+				}
+			);
+
+		},
+
 		addEventListeners: function () {
 			var SELF = this;
 			/**
@@ -331,6 +367,9 @@
 				elasticPress.restartIndex();
 			});
 			SELF.site_selector.on('change', this.changeSite);
+
+			// Process site selector on post type tab
+			SELF.post_type_site.on('change', this.changePostTypeSite);
 		},
 
 		/**
