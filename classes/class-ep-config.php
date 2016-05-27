@@ -126,21 +126,39 @@ class EP_Config {
 	 */
 	public function get_indexable_post_types( $network = false ) {
 
-		if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK && true === $network ) {
+		$post_types = $this->get_post_type_option( $network );
 
-			$post_types = get_site_option( 'ep_post_types' );
+		return apply_filters( 'ep_indexable_post_types', $post_types );
 
-		} else {
+	}
 
-			$post_types = get_option( 'ep_post_types' );
+	/**
+	 * Get the post type option with a fallback to network options if requested.
+	 *
+	 * @since 2.0
+	 *
+	 * @param bool $network True to force network options or false.
+	 *
+	 * @return mixed|void The array of post_types from the options or false.
+	 */
+	protected function get_post_type_option( $network = false ) {
 
+		$post_types = get_option( 'ep_post_types' );
+
+		if ( ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK ) && ( true === $network || false === $post_types ) ) {
+
+			$network_post_types = get_site_option( 'ep_post_types' );
+
+			if ( false !== $network_post_types ) {
+				$post_types = $network_post_types;
+			}
 		}
 
 		if ( false === $post_types ) {
 			$post_types = get_post_types( array( 'exclude_from_search' => false ) );
 		}
 
-		return apply_filters( 'ep_indexable_post_types', $post_types );
+		return $post_types;
 
 	}
 
@@ -155,19 +173,7 @@ class EP_Config {
 	 */
 	public function get_searchable_post_types( $network = false ) {
 
-		if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK && true === $network ) {
-
-			$post_types = get_site_option( 'ep_post_types' );
-
-		} else {
-
-			$post_types = get_option( 'ep_post_types' );
-
-		}
-
-		if ( false === $post_types ) {
-			$post_types = get_post_types( array( 'exclude_from_search' => false ) );
-		}
+		$post_types = $this->get_post_type_option( $network );
 
 		return apply_filters( 'ep_searchable_post_types', $post_types );
 
