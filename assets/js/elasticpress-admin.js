@@ -342,6 +342,7 @@
 									formInputElement.attr( 'type', 'checkbox' );
 									formInputElement.attr( 'name', 'ep_post_types[' + field + ']' );
 									formInputElement.attr( 'value', field );
+									formInputElement.attr( 'class', 'ep_post_type_field' );
 
 									if ( true === response.responseJSON.data[field].selected ) {
 										formInputElement.attr( 'checked', 'checked' );
