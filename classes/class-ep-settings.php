@@ -300,7 +300,67 @@ class EP_Settings {
 
 		check_admin_referer( 'ep_post_type_change_nonce', 'nonce' );
 
-		wp_send_json_success( 'good' );
+		$site      = absint( $_POST['site'] ); // WPCS: input var ok.
+		$post_type = sanitize_text_field( $_POST['post_type'] ); // WPCS: input var ok.
+		$status    = ( 'false' === $_POST['selected'] ) ? false : true; // WPCS: input var ok.
+
+		if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK ) {
+
+			if ( 0 !== $site ) {
+				switch_to_blog( $site );
+			}
+		}
+
+		$all_post_types = get_post_types( array( 'public' => true ) );
+
+		if ( ! in_array( $post_type, $all_post_types, true ) ) {
+
+			wp_send_json_error();
+			wp_die();
+
+		}
+
+		$searchable_post_types = ep_get_indexable_post_types();
+
+		if ( false === $status && in_array( $post_type, $searchable_post_types, true ) ) {
+			unset( $searchable_post_types[ $post_type ] );
+		}
+
+		if ( true === $status && ! in_array( $post_type, $searchable_post_types, true ) ) {
+			$searchable_post_types[ $post_type ] = $post_type;
+		}
+
+		if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK && 0 === $site ) {
+
+			$all_site_post_types = get_site_option( 'ep_post_types' );
+
+			if ( false === $all_site_post_types ) {
+
+				add_site_option( 'ep_post_types', array( $site => $searchable_post_types ) );
+
+			} elseif ( is_array( $all_site_post_types ) ) {
+
+				$all_site_post_types[ $site ] = $searchable_post_types;
+
+				update_site_option( 'ep_post_types', $all_site_post_types );
+
+			} else {
+
+				wp_send_json_error();
+				wp_die();
+
+			}
+		} else {
+
+			update_option( 'ep_post_types', $searchable_post_types );
+
+		}
+
+		if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK && 0 !== $site ) {
+			restore_current_blog();
+		}
+
+		wp_send_json_success();
 		wp_die();
 
 	}
