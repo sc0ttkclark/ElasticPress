@@ -334,6 +334,7 @@
 
 							for ( var field in response.responseJSON.data ) {
 
+								// Update the form if we have a valid return object.
 								if ( response.responseJSON.data.hasOwnProperty( field ) ) {
 
 									var formListItem     = $( '<li>' );
