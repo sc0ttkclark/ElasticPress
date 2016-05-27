@@ -119,24 +119,17 @@ class EP_Config {
 	 * Returns indexable post types for the current site
 	 *
 	 * @since 0.9
+	 *
+	 * @param bool $network True to retrieve the network default or false.
+	 *
 	 * @return mixed|void
 	 */
-	public function get_indexable_post_types() {
+	public function get_indexable_post_types( $network = false ) {
 
-		$post_types = false;
+		if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK && true === $network ) {
 
-		if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK ) {
+			$post_types = get_site_option( 'ep_post_types' );
 
-			$all_post_types = get_site_option( 'ep_post_types' );
-
-			if ( is_array( $all_post_types ) ) {
-
-				$current_site = get_current_blog_id();
-
-				if ( isset( $all_post_types[ $current_site ] ) && is_array( $all_post_types[ $current_site ] ) ) {
-					$post_types = $all_post_types[ $current_site ];
-				}
-			}
 		} else {
 
 			$post_types = get_option( 'ep_post_types' );
@@ -148,30 +141,24 @@ class EP_Config {
 		}
 
 		return apply_filters( 'ep_indexable_post_types', $post_types );
+
 	}
 
 	/**
 	 * Returns searchable post types for the current site
 	 *
 	 * @since 1.9
+	 *
+	 * @param bool $network True to retrieve the network default or false.
+	 *
 	 * @return mixed|void
 	 */
-	public function get_searchable_post_types() {
+	public function get_searchable_post_types( $network = false ) {
 
-		$post_types = false;
+		if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK && true === $network ) {
 
-		if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK ) {
+			$post_types = get_site_option( 'ep_post_types' );
 
-			$all_post_types = get_site_option( 'ep_post_types' );
-
-			if ( is_array( $all_post_types ) ) {
-
-				$current_site = get_current_blog_id();
-
-				if ( isset( $all_post_types[ $current_site ] ) && is_array( $all_post_types[ $current_site ] ) ) {
-					$post_types = $all_post_types[ $current_site ];
-				}
-			}
 		} else {
 
 			$post_types = get_option( 'ep_post_types' );
@@ -183,6 +170,7 @@ class EP_Config {
 		}
 
 		return apply_filters( 'ep_searchable_post_types', $post_types );
+
 	}
 
 	/**
