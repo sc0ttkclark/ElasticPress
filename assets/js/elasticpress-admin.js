@@ -383,10 +383,17 @@
 
 		},
 
-		processPostTypeChange : function() {
+		processPostTypeChange : function () {
 
-			console.log( 'test' );
+			var data = {
+				action    : 'ep_process_site_post_types',
+				nonce     : ep.post_type_change_nonce,
+				site      : elasticPress.post_type_site.val() || 0,
+				post_type : $( this ).val(),
+				selected  : $( this ).prop( 'checked' )
+			};
 
+			console.log( data );
 
 		},
 
