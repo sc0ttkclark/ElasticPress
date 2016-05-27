@@ -60,13 +60,7 @@ if ( true === $network ) {
 
 ?>
 
-<form method="POST" action="<?php echo esc_attr( $action ); ?>">
-
-	<?php
-	settings_fields( 'elasticpress_post_types' );
-	do_settings_sections( 'elasticpress_post_types' );
-	?>
-
-	<input type="submit" class="button secondary button-large" value="<?php echo esc_attr__( 'Submit', 'elasticpress' ); ?>">
-
-</form>
+<?php
+settings_fields( 'elasticpress_post_types' );
+do_settings_sections( 'elasticpress_post_types' );
+?>
