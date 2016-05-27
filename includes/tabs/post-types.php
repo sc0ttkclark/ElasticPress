@@ -48,9 +48,6 @@ if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK ) {
 		</select>
 		<p class="description"><?php esc_html_e( 'Note: Selecting "All Sites" uses a generic set of post types from the main site on the network.', 'elasticpress' ); ?></p>
 	</div>
-<?php else: ?>
-	adsfadf
-
 <?php
 	endif;
 	settings_fields( 'elasticpress_post_types' );
