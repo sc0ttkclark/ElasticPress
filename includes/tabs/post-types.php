@@ -18,49 +18,43 @@ if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK ) {
 	$network = true;
 }
 
-echo '<p class="ep-actions">';
-
-if ( true === $network ) {
-
-	echo '<table class="form-table"><tbody><tr><th scope="row">Select site:</th>';
-
-	echo '<td>';
-	echo '<div id="ep_site_sel">';
-	echo '<select name="ep_site_select_post_type" id="ep_site_select_post_type">';
-	echo '<option value="0">' . esc_html__( 'All Sites', 'elasticpress' ) . '</option>';
-
-	$site_list = get_site_transient( 'ep_site_list_for_stats' );
-
-	if ( false === $site_list ) {
-
-		$site_list = '';
-		$sites     = ep_get_sites();
-
-		foreach ( $sites as $site ) {
-
-			$details = get_blog_details( $site['blog_id'] );
-
-			$site_list .= sprintf( '<option value="%d">%s</option>', $site['blog_id'], $details->blogname );
-
-		}
-
-		set_site_transient( 'ep_site_list_for_stats', $site_list, 600 );
-
-	}
-
-	echo wp_kses( $site_list, array( 'option' => array( 'value' => array() ) ) );
-
-	echo '</select>';
-	echo '</div>';
-	echo '<p>' . esc_html__( 'Note: Selecting "All Sites" uses a generic set of post types from the main site on the network.', 'elasticpress' ) . '</p>';
-	echo '</td>';
-	echo '</tr></table>';
-
-}
-
 ?>
+
+<div id="ep_post_types">
+
+<?php if ( true === $network ) :?>
+	<div id="ep_site_sel">
+		<strong><?php esc_html_e( 'Select a site:', 'elasticpress' ) ?></strong>
+		<select name="ep_site_select" id="ep_site_select">
+			<option value="0"><?php esc_html_e( 'Select', 'elasticpress' ) ?></option>
+			<?php
+			$site_list = get_site_transient( 'ep_site_list_for_stats' );
+
+			if ( false === $site_list ) {
+
+				$site_list = '';
+				$sites     = ep_get_sites();
+
+				foreach ( $sites as $site ) {
+					$details = get_blog_details( $site['blog_id'] );
+					$site_list .= sprintf( '<option value="%d">%s</option>', $site['blog_id'], $details->blogname );
+				}
+
+				set_site_transient( 'ep_site_list_for_stats', $site_list, 600 );
+			}
+
+			echo wp_kses( $site_list, array( 'option' => array( 'value' => array() ) ) );
+			?>
+		</select>
+		<p class="description"><?php esc_html_e( 'Note: Selecting "All Sites" uses a generic set of post types from the main site on the network.', 'elasticpress' ); ?></p>
+	</div>
+<?php else: ?>
+	adsfadf
 
 <?php
-settings_fields( 'elasticpress_post_types' );
-do_settings_sections( 'elasticpress_post_types' );
+	endif;
+	settings_fields( 'elasticpress_post_types' );
+	do_settings_sections( 'elasticpress_post_types' );
 ?>
+
+

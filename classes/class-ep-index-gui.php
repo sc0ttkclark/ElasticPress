@@ -49,36 +49,8 @@ class EP_Index_GUI {
 		add_action( 'wp_ajax_ep_pause_index', array( $this, 'action_wp_ajax_ep_pause_index' ) );
 		add_action( 'wp_ajax_ep_restart_index', array( $this, 'action_wp_ajax_ep_restart_index' ) );
 		add_action( 'wp_ajax_ep_get_site_stats', array( $this, 'action_wp_ajax_ep_get_site_stats' ) );
-		add_action( 'ep_do_settings_meta', array( $this, 'action_ep_do_settings_meta' ) );
 
 		return $this;
-
-	}
-
-	/**
-	 * Add index settings box
-	 *
-	 * Adds a meta box for allowing remote indexing.
-	 *
-	 * @since 1.9
-	 *
-	 * @param EP_Settings $ep_settings Instance of EP_Settings.
-	 *
-	 * @return void
-	 */
-	public function action_ep_do_settings_meta( $ep_settings ) {
-
-		add_meta_box(
-			'ep-contentbox-3', 'Index Site',
-			array(
-				$ep_settings,
-				'load_view',
-			),
-			$ep_settings->options_page,
-			'normal',
-			'core',
-			array( 'index.php' )
-		);
 
 	}
 
