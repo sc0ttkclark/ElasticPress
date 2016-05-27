@@ -26,7 +26,7 @@ if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK ) {
 	<div id="ep_site_sel">
 		<strong><?php esc_html_e( 'Select a site:', 'elasticpress' ) ?></strong>
 		<select name="ep_site_select" id="ep_site_select">
-			<option value="0"><?php esc_html_e( 'Select', 'elasticpress' ) ?></option>
+			<option value="0"><?php esc_html_e( 'All Sites', 'elasticpress' ) ?></option>
 			<?php
 			$site_list = get_site_transient( 'ep_site_list_for_stats' );
 
