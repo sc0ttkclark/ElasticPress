@@ -394,42 +394,37 @@ class EP_Index_GUI {
 		$index_stats  = ep_get_index_status( $site );
 		$search_stats = ep_get_search_status( $site );
 
-		$stats = '<div id="ep_' . $site . '" class="ep_site">';
+		ob_start();
 
-		if ( $index_stats['status'] ) {
+		if ( $index_stats['status'] ) : ?>
+			<div class="postbox ep_stats_box ep_ajax_box">
+				<h2><span><?php esc_html_e( 'Search Stats', 'elasticpress' ); ?></span></h2>
+				<div class="inside">
+					<div class="main">
+						<ul>
+							<li><strong><?php esc_html_e( 'Total Queries:', 'elasticpress' ); ?> </strong> <?php echo esc_html( $search_stats->query_total );?></li>
+							<li><strong><?php esc_html_e( 'Query Time:', 'elasticpress' );?> </strong> <?php echo esc_html( $search_stats->query_time_in_millis ) . 'ms' ?></li>
+							<li><strong><?php esc_html_e( 'Total Fetches:', 'elasticpress' );?> </strong> <?php echo esc_html( $search_stats->fetch_total );?></li>
+							<li><strong><?php esc_html_e( 'Fetch Time:', 'elasticpress' );?> </strong> <?php echo esc_html( $search_stats->fetch_time_in_millis ) . 'ms'; ?></li>
+						</ul>
+					</div>
+				</div>
+			</div>
 
-			$stats .= '<div class="search_stats">';
-			$stats .= sprintf( '<h3>%s</h3>', esc_html__( 'Search Stats', 'elasticpress' ) );
-			$stats .= '<ul>';
-			$stats .= '<li>';
-			$stats .= '<strong>' . esc_html__( 'Total Queries:', 'elasticpress' ) . ' </strong> ' . esc_html( $search_stats->query_total );
-			$stats .= '</li>';
-			$stats .= '<li>';
-			$stats .= '<strong>' . esc_html__( 'Query Time:', 'elasticpress' ) . ' </strong> ' . esc_html( $search_stats->query_time_in_millis ) . 'ms';
-			$stats .= '</li>';
-			$stats .= '<li>';
-			$stats .= '<strong>' . esc_html__( 'Total Fetches:', 'elasticpress' ) . ' </strong> ' . esc_html( $search_stats->fetch_total );
-			$stats .= '</li>';
-			$stats .= '<li>';
-			$stats .= '<strong>' . esc_html__( 'Fetch Time:', 'elasticpress' ) . ' </strong> ' . esc_html( $search_stats->fetch_time_in_millis ) . 'ms';
-			$stats .= '</li>';
-			$stats .= '</ul>';
-			$stats .= '</div>';
-			$stats .= '<div class="index_stats">';
-			$stats .= sprintf( '<h3>%s</h3>', esc_html__( 'Index Stats', 'elasticpress' ) );
-			$stats .= '<ul>';
-			$stats .= '<li>';
-			$stats .= '<strong>' . esc_html__( 'Index Total:', 'elasticpress' ) . ' </strong> ' . esc_html( $index_stats['data']->index_total );
-			$stats .= '</li>';
-			$stats .= '<li>';
-			$stats .= '<strong>' . esc_html__( 'Index Time:', 'elasticpress' ) . ' </strong> ' . esc_html( $index_stats['data']->index_time_in_millis ) . 'ms';
-			$stats .= '</li>';
-			$stats .= '</ul>';
-			$stats .= '</div>';
-		}
-		$stats .= '</div>';
-
-		wp_send_json_success( $stats );
+			<div class="postbox ep_stats_box ep_ajax_box">
+				<h2><span><?php esc_html_e( 'Index Stats', 'elasticpress' ); ?></span></h2>
+				<div class="inside">
+					<div class="main">
+						<ul>
+							<li><strong><?php esc_html_e( 'Index Total:', 'elasticpress' );?> </strong> <?php echo esc_html( $index_stats['data']->index_total ); ?></li>
+							<li><strong><?php esc_html_e( 'Index Time:', 'elasticpress' ); ?></strong> <?php echo esc_html( $index_stats['data']->index_time_in_millis ) . 'ms'; ?></li>
+						</ul>
+					</div>
+				</div>
+			</div>
+		<?php endif;
+		$content = ob_get_clean();
+		wp_send_json_success( $content );
 
 	}
 }

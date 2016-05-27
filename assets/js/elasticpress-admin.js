@@ -293,8 +293,8 @@
 					type    : 'POST',
 					data    : data,
 					complete: function (response) {
-
-						$('#ep_site_stats').html(response.responseJSON.data);
+						$('.ep_ajax_box').remove();
+						$('#ep_stats_container').append(response.responseJSON.data);
 
 					}
 

@@ -16,131 +16,113 @@ if ( is_multisite() && ( ! defined( 'EP_IS_NETWORK' ) || ! EP_IS_NETWORK ) ) {
 }
 
 $stats = ep_get_index_status( $site_stats_id );
-
-echo '<div id="ep_stats">';
-
 ?>
 
-	<form>
-		<table class="form-table">
-			<tr>
-				<th scope="row"><?php esc_html_e( 'Elasticsearch Host', 'elasticpress' ) ?>:</th>
-				<?php if ( ! is_wp_error( ep_check_host() ) ) { ?>
+<div id="ep_stats">
 
-					<?php $current_host = ep_get_host( true ); ?>
+	<?php if ( $stats['status'] ): ?>
 
-					<td><?php echo( ! is_wp_error( $current_host ) ? $current_host : esc_html__( 'Current host is set but cannot be contacted. Please contact the server administrator.', 'elasticpress' ) ); ?></td>
+		<?php if ( ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK ) ): ?>
 
-				<?php } else { ?>
+			<div id="ep_ind_stats" class="ep_stats_section">
 
-					<td><?php esc_html_e( 'A host has not been set or is set but cannot be contacted. You must set a proper host to continue.', 'elasticpress' ); ?></td>
+				<div id="ep_site_sel">
+					<strong><?php esc_html_e( 'Select a site:', 'elasticpress' ) ?></strong>
+					<select name="ep_site_select" id="ep_site_select">
+						<option value="0"><?php esc_html_e( 'Select', 'elasticpress' ) ?></option>
+						<?php
+						$site_list = get_site_transient( 'ep_site_list_for_stats' );
 
-				<?php } ?>
-			</tr>
-		</table>
-	</form>
+						if ( false === $site_list ) {
 
-<?php
+							$site_list = '';
+							$sites     = ep_get_sites();
 
-if ( $stats['status'] ) {
+							foreach ( $sites as $site ) {
+								$details = get_blog_details( $site['blog_id'] );
+								$site_list .= sprintf( '<option value="%d">%s</option>', $site['blog_id'], $details->blogname );
+							}
 
-	printf( '<h2>%s</h2>', esc_html__( 'Plugin Status', 'elasticpress' ) );
-	?>
-	<span class="dashicons dashicons-yes"
-	      style="color:green;"></span> <?php esc_html_e( 'Connected to Elasticsearch.', 'elasticpress' ); ?><br/><br/>
+							set_site_transient( 'ep_site_list_for_stats', $site_list, 600 );
+						}
 
-	<?php if ( ep_is_activated() ) { ?>
+						echo wp_kses( $site_list, array( 'option' => array( 'value' => array() ) ) );
+						?>
+					</select>
+				</div>
 
-		<span class="dashicons dashicons-yes"
-		      style="color:green;"></span> <?php esc_html_e( 'ElasticPress can override WP search.', 'elasticpress' ); ?><br/><br/>
-
-	<?php } else { ?>
-
-		<span class="dashicons dashicons-no"
-		      style="color:red;"></span> <?php esc_html_e( 'ElasticPress is not enabled and cannot override WP queries. You can activate it on the form to the left.', 'elasticpress' ); ?>
-		<br/>
-
-	<?php } ?>
-
-	<?php
-	if ( ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK ) ) {
-
-		echo '<div id="ep_ind_stats" class="ep_stats_section">';
-
-		printf( '<h2>%s</h2>', esc_html__( 'Site Stats', 'elasticpress' ) );
-
-		echo '<div id="ep_site_sel">';
-		echo '<strong>' . esc_html__( 'Select a site:', 'elasticpress' ) . '</strong> <select name="ep_site_select" id="ep_site_select">';
-		echo '<option value="0">' . esc_html__( 'Select', 'elasticpress' ) . '</option>';
-
-		$site_list = get_site_transient( 'ep_site_list_for_stats' );
-
-		if ( false === $site_list ) {
-
-			$site_list = '';
-			$sites     = ep_get_sites();
-
-			foreach ( $sites as $site ) {
-
-				$details = get_blog_details( $site['blog_id'] );
-
-				$site_list .= sprintf( '<option value="%d">%s</option>', $site['blog_id'], $details->blogname );
-
-			}
-
-			set_site_transient( 'ep_site_list_for_stats', $site_list, 600 );
-
-		}
-
-		echo wp_kses( $site_list, array( 'option' => array( 'value' => array() ) ) );
-
-		echo '</select>';
-		echo '</div>';
-
-		echo '<div id="ep_site_stats"></div>';
-
-		echo '</div>';
-
-	}
-	?>
-
-	<div id="ep_cluster_stats" class="ep_stats_section">
-
-		<?php printf( '<h2>%s</h2>', esc_html__( 'Cluster Stats', 'elasticpress' ) ); ?>
+			</div>
+		<?php endif; ?>
 
 		<?php
-		$stats      = ep_get_cluster_status();
-		$fs         = $stats->nodes->fs;
-		$disk_usage = $fs->total_in_bytes - $fs->available_in_bytes;
+			$stats      = ep_get_cluster_status();
+			$fs         = $stats->nodes->fs;
+			$disk_usage = $fs->total_in_bytes - $fs->available_in_bytes;
 		?>
 
-		<ul>
-			<li>
-				<strong><?php esc_html_e( 'Disk Usage:', 'elasticpress' ); ?></strong> <?php echo esc_html( number_format( ( $disk_usage / $fs->total_in_bytes ) * 100, 0 ) ); ?>
-				%
-			</li>
-			<li>
-				<strong><?php esc_html_e( 'Disk Space Available:', 'elasticpress' ); ?></strong> <?php echo esc_html( $this->ep_byte_size( $fs->available_in_bytes ) ); ?>
-			</li>
-			<li>
-				<strong><?php esc_html_e( 'Total Disk Space:', 'elasticpress' ); ?></strong> <?php echo esc_html( $this->ep_byte_size( $fs->total_in_bytes ) ); ?>
-			</li>
-		</ul>
-	</div>
+		<div id="ep_stats_container">
 
-	<?php
-} elseif ( ! is_wp_error( ep_check_host() ) ) {
+			<div class="postbox ep_stats_box">
+				<h2><span><?php esc_html_e( 'Cluster Stats', 'elasticpress' ); ?></span></h2>
+				<div class="inside">
+					<div class="main">
+						<ul>
+							<li>
+								<strong><?php esc_html_e( 'Disk Usage:', 'elasticpress' ); ?></strong> <?php echo esc_html( number_format( ( $disk_usage / $fs->total_in_bytes ) * 100, 0 ) ); ?>%
+							</li>
+							<li>
+								<strong><?php esc_html_e( 'Disk Space Available:', 'elasticpress' ); ?></strong> <?php echo esc_html( $this->ep_byte_size( $fs->available_in_bytes ) ); ?>
+							</li>
+							<li>
+								<strong><?php esc_html_e( 'Total Disk Space:', 'elasticpress' ); ?></strong> <?php echo esc_html( $this->ep_byte_size( $fs->total_in_bytes ) ); ?>
+							</li>
+						</ul>
+					</div>
+				</div>
+			</div>
 
-	$allowed_tags = array(
-		'p'    => array(),
-		'code' => array(),
-	);
+			<?php if ( ! defined( 'EP_IS_NETWORK' ) ): ?>
+				<?php
+					$index_stats  = ep_get_index_status( $site_stats_id );
+					$search_stats = ep_get_search_status( $site_stats_id );
+				?>
+				<div class="postbox ep_stats_box ep_ajax_box">
+					<h2><span><?php esc_html_e( 'Search Stats', 'elasticpress' ); ?></span></h2>
+					<div class="inside">
+						<div class="main">
+							<ul>
+								<li><strong><?php esc_html_e( 'Total Queries:', 'elasticpress' ); ?> </strong> <?php echo esc_html( $search_stats->query_total );?></li>
+								<li><strong><?php esc_html_e( 'Query Time:', 'elasticpress' );?> </strong> <?php echo esc_html( $search_stats->query_time_in_millis ) . 'ms' ?></li>
+								<li><strong><?php esc_html_e( 'Total Fetches:', 'elasticpress' );?> </strong> <?php echo esc_html( $search_stats->fetch_total );?></li>
+								<li><strong><?php esc_html_e( 'Fetch Time:', 'elasticpress' );?> </strong> <?php echo esc_html( $search_stats->fetch_time_in_millis ) . 'ms'; ?></li>
+							</ul>
+						</div>
+					</div>
+				</div>
 
-	echo '<span class="dashicons dashicons-no" style="color:red;"></span> <strong>' . esc_html__( 'ERROR:', 'elasticpress' ) . '</strong> ' . wp_kses( $stats['msg'], array(
-			'p'    => array(),
-			'code' => array(),
-		) );
+				<div class="postbox ep_stats_box ep_ajax_box">
+					<h2><span><?php esc_html_e( 'Index Stats', 'elasticpress' ); ?></span></h2>
+					<div class="inside">
+						<div class="main">
+							<ul>
+								<li><strong><?php esc_html_e( 'Index Total:', 'elasticpress' );?> </strong> <?php echo esc_html( $index_stats['data']->index_total ); ?></li>
+								<li><strong><?php esc_html_e( 'Index Time:', 'elasticpress' ); ?></strong> <?php echo esc_html( $index_stats['data']->index_time_in_millis ) . 'ms'; ?></li>
+							</ul>
+						</div>
+					</div>
+				</div>
+			<?php endif; ?>
+		</div>
 
-}
 
-echo '</div>';
+
+	<?php elseif ( ! is_wp_error( ep_check_host() ) ) :
+
+		echo '<strong>' . esc_html__( 'ERROR:', 'elasticpress' ) . '</strong> ' . wp_kses( $stats['msg'], array(
+				'p'    => array(),
+				'code' => array(),
+			) );
+
+	endif; ?>
+
+</div>
