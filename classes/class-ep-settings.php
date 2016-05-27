@@ -267,8 +267,16 @@ class EP_Settings {
 
 		check_admin_referer( 'ep_post_type_nonce', 'nonce' );
 
+		$site         = absint( $_POST['site'] ); // WPCS: input var ok.
+		$network      = ( 0 === $site ) ? true : false;
+		$current_site = get_current_blog_id();
+
+		if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK && false === $network && $site !== $current_site ) {
+			switch_to_blog( $current_site );
+		}
+
 		$post_types           = array();
-		$post_types_selected  = ep_get_indexable_post_types();
+		$post_types_selected  = ep_get_indexable_post_types( $network );
 		$post_types_available = get_post_types( array( 'public' => true ) );
 
 		foreach ( $post_types_available as $post_type_slug ) {
@@ -280,6 +288,10 @@ class EP_Settings {
 				'selected' => in_array( $post_type_slug, $post_types_selected, true ),
 			);
 
+		}
+
+		if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK && false === $network && $site !== $current_site ) {
+			restore_current_blog();
 		}
 
 		wp_send_json_success( $post_types );
@@ -303,11 +315,15 @@ class EP_Settings {
 		$site      = absint( $_POST['site'] ); // WPCS: input var ok.
 		$post_type = sanitize_text_field( $_POST['post_type'] ); // WPCS: input var ok.
 		$status    = ( 'false' === $_POST['selected'] ) ? false : true; // WPCS: input var ok.
+		$network   = true;
 
 		if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK ) {
 
 			if ( 0 !== $site ) {
+
+				$network = false;
 				switch_to_blog( $site );
+
 			}
 		}
 
@@ -320,7 +336,7 @@ class EP_Settings {
 
 		}
 
-		$searchable_post_types = ep_get_indexable_post_types();
+		$searchable_post_types = ep_get_indexable_post_types( $network );
 
 		if ( false === $status && in_array( $post_type, $searchable_post_types, true ) ) {
 			unset( $searchable_post_types[ $post_type ] );
@@ -332,24 +348,8 @@ class EP_Settings {
 
 		if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK && 0 === $site ) {
 
-			$all_site_post_types = get_site_option( 'ep_post_types' );
+			update_site_option( 'ep_post_types', $searchable_post_types );
 
-			if ( false === $all_site_post_types ) {
-
-				add_site_option( 'ep_post_types', array( $site => $searchable_post_types ) );
-
-			} elseif ( is_array( $all_site_post_types ) ) {
-
-				$all_site_post_types[ $site ] = $searchable_post_types;
-
-				update_site_option( 'ep_post_types', $all_site_post_types );
-
-			} else {
-
-				wp_send_json_error();
-				wp_die();
-
-			}
 		} else {
 
 			update_option( 'ep_post_types', $searchable_post_types );
