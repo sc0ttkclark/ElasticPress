@@ -315,18 +315,16 @@ function ep_get_index_name( $blog_id = null ) {
 	return EP_Config::factory()->get_index_name( $blog_id );
 }
 
-function ep_get_indexable_post_types() {
-	return EP_Config::factory()->get_indexable_post_types();
+function ep_get_indexable_post_types( $network = false) {
+	return EP_Config::factory()->get_indexable_post_types( $network );
 }
 
 function ep_get_searchable_post_types( $network = false ) {
-
 	return EP_Config::factory()->get_searchable_post_types( $network );
 }
 
-function ep_get_indexable_post_status( $network = false ) {
-
-	return EP_Config::factory()->get_indexable_post_status( $network );
+function ep_get_indexable_post_status() {
+	return EP_Config::factory()->get_indexable_post_status();
 }
 
 function ep_get_network_alias() {
