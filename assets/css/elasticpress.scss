@@ -43,48 +43,32 @@
 #ep_stats {
 
 	#ep_site_sel {
-		padding : 15px 0 0 0;
+		padding: 20px 0 0;
 	}
 
-	.ep_stats_section {
-		padding : 20px 0;
-	}
+	#ep_stats_container{
+		display: flex;
+		-webkit-flex-flow: row wrap;
+		justify-content: space-between;
+		margin-top: 20px;
 
-	.search_stats {
-		display : block;
-		float   : left;
-		margin  : 0;
-		padding : 10px 0;
-		width   : 50%;
-	}
+		.ep_stats_box{
+			width: 32%;
+			h2{
+				font-size: 14px;
+				padding: 8px 12px;
+				margin: 0;
+				line-height: 1.4;
+				border-bottom: 1px solid #eee;
+				-webkit-user-select: none;
+				-moz-user-select: none;
+				-ms-user-select: none;
+				user-select: none;
+			}
+		}
 
-	.index_stats {
-		display : block;
-		float   : right;
-		margin  : 0;
-		padding : 10px 0;
-		width   : 50%;
-	}
-
-	#ep_ind_stats,
-	#ep_cluster_stats {
-		clear : both;
-		width : 100%;
-	}
-
-	h3 {
-		margin  : 0;
-		padding : 0;
-	}
-
-	ul {
-
-		list-style : disc;
-		margin     : 0;
-		padding    : 0;
-
-		li {
-			margin-left : 20px;
+		@media all and (max-width: 780px) {
+			.ep_stats_box { width: 100%; }
 		}
 
 	}

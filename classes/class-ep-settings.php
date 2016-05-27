@@ -604,6 +604,15 @@ class EP_Settings {
 		return add_query_arg( wp_parse_args( array( 'tab' => $tab ), $defaults ), $url );
 	}
 
+	/**
+	 * Populate ElasticPress default error notices
+	 *
+	 * @since 2.0
+	 *
+	 * @param $errors
+	 *
+	 * @return array
+	 */
 	public function error_notices( $errors ){
 		$site_stats_id = null;
 
