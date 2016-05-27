@@ -284,6 +284,24 @@ class EP_Settings {
 	}
 
 	/**
+	 * Action wp_ajax_ep_process_site_post_types
+	 *
+	 * Process post type changes for search.
+	 *
+	 * @since 2.0
+	 *
+	 * @return void
+	 */
+	public function action_wp_ajax_ep_process_site_post_types() {
+
+		check_admin_referer( 'ep_post_type_change_nonce', 'nonce' );
+
+		wp_send_json_success( 'good' );
+		wp_die();
+
+	}
+
+	/**
 	 * Sanitize activation
 	 *
 	 * Sanitizes the activation input from the dashboard and performs activation/deactivation.
