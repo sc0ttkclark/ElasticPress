@@ -326,6 +326,8 @@
 					data     : data,
 					complete : function ( response ) {
 
+						console.log( response );
+
 						if ( response.responseJSON && response.responseJSON.data ) {
 
 							var postList = $( '#ep_post_type_list' );
