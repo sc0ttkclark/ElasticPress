@@ -59,7 +59,7 @@ class EP_Settings {
 
 		add_action( 'admin_init', array( $this, 'action_admin_init' ) );
 
-		if ( current_user_can( 'manage-options' ) ) {
+		if ( current_user_can( 'manage_options' ) ) {
 
 			add_action( 'wp_ajax_ep_get_site_post_types', array( $this, 'action_wp_ajax_ep_get_site_post_types' ) );
 			add_action( 'wp_ajax_ep_process_site_post_types', array( $this, 'action_wp_ajax_ep_process_site_post_types' ) );
