@@ -306,17 +306,16 @@
 		},
 
 		/**
-		 * Toggle between site stats on network screen
+		 * Gets the site data from an ajax endpoint
 		 *
-		 * @param event
+		 * @param siteID the site to retrieve from.
 		 */
-		changePostTypeSite : function ( event ) {
-			event.preventDefault();
+		getSitePostTypes : function( siteID ) {
 
 			var data = {
 				action : 'ep_get_site_post_types',
 				nonce  : ep.post_type_nonce,
-				site   : elasticPress.post_type_site.val()
+				site   : siteID
 			};
 
 			//call the ajax
@@ -328,6 +327,10 @@
 					complete : function ( response ) {
 
 						if ( response.responseJSON && response.responseJSON.data ) {
+
+							var postList = $( '#ep_post_type_list' );
+
+							postList.html( '' );
 
 							for ( var field in response.responseJSON.data ) {
 
@@ -346,7 +349,7 @@
 									$( formListItem ).append( formInputElement );
 									$( formListItem ).append( response.responseJSON.data[field].name );
 
-									$( '#ep_post_type_list' ).append( formListItem );
+									postList.append( formListItem );
 
 								}
 							}
@@ -354,6 +357,21 @@
 					}
 				}
 			);
+
+		},
+
+		/**
+		 * Toggle between site stats on network screen
+		 *
+		 * @param event
+		 */
+		changePostTypeSite : function ( event ) {
+
+			event.preventDefault();
+
+			var siteID = elasticPress.post_type_site.val();
+
+			elasticPress.getSitePostTypes( siteID );
 
 		},
 
@@ -404,6 +422,10 @@
 			}
 
 			this.addEventListeners();
+
+			if ( 0 < $( '#ep_post_type_list' ).length ) {
+				this.getSitePostTypes( 0 );
+			}
 		}
 
 	};
