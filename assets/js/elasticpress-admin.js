@@ -375,6 +375,13 @@
 
 		},
 
+		processPostTypeChange : function() {
+
+			console.log( 'test' );
+
+
+		},
+
 		addEventListeners: function () {
 			var SELF = this;
 			/**
