@@ -393,7 +393,17 @@
 				selected  : $( this ).prop( 'checked' )
 			};
 
-			console.log( data );
+			//call the ajax
+			$.ajax(
+				{
+					url      : ajaxurl,
+					type     : 'POST',
+					data     : data,
+					complete : function ( response ) {
+						console.log( response );
+					}
+				}
+			);
 
 		},
 
