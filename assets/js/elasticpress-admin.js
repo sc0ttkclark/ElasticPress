@@ -354,6 +354,12 @@
 
 								}
 							}
+
+							// Make sure we listen for further changes.
+							$( '.ep_post_type_field' ).each( function() {
+								$( this ).on( 'change', elasticPress.processPostTypeChange );
+							});
+
 						}
 					}
 				}
