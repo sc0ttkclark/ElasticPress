@@ -9,26 +9,6 @@ WP_CLI::add_command( 'elasticpress', 'ElasticPress_CLI_Command' );
  *
  */
 class ElasticPress_CLI_Command extends WP_CLI_Command {
-	/**
-	 * Holds the posts that will be bulk synced.
-	 *
-	 * @since 0.9
-	 */
-	private $posts = array();
-
-	/**
-	 * Holds all of the posts that failed to index during a bulk index.
-	 *
-	 * @since 0.9
-	 */
-	private $failed_posts = array();
-
-	/**
-	 * Holds error messages for individual posts that failed to index (assuming they're available).
-	 *
-	 * @since 1.7
-	 */
-	private $failed_posts_message = array();
 
 	/**
 	 * Holds the indexing engine for use in various operations.
