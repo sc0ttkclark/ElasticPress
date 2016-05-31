@@ -31,6 +31,31 @@ class ElasticPress_CLI_Command extends WP_CLI_Command {
 	private $failed_posts_message = array();
 
 	/**
+	 * Holds the indexing engine for use in various operations.
+	 *
+	 * @since 2.0
+	 *
+	 * @var EP_Index_Worker
+	 */
+	private $index_worker;
+
+	/**
+	 * ElasticPress_CLI_Command constructor.
+	 *
+	 * Ensures the index worker is available.
+	 */
+	public function __construct() {
+
+		// Load the Indexer files.
+		if ( ! class_exists( 'EP_Index_Worker' ) ) {
+			require( dirname( dirname( __FILE__ ) ) . '/classes/class-ep-index-worker.php' );
+		}
+
+		$this->index_worker = new EP_Index_Worker();
+
+	}
+
+	/**
 	 * Add the document mapping
 	 *
 	 * @synopsis [--network-wide]
