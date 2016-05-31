@@ -346,7 +346,7 @@ class ElasticPress_CLI_Command extends WP_CLI_Command {
 						// index the posts one-by-one. not sure why someone may want to do this.
 						$result = ep_sync_post( get_the_ID() );
 					} else {
-						$result = $this->queue_post( get_the_ID(), $query->post_count, $show_bulk_errors );
+						$result = $this->index_worker->queue_post( get_the_ID(), $query->post_count, 0, $show_bulk_errors );
 					}
 
 					if ( ! $result ) {
@@ -371,7 +371,7 @@ class ElasticPress_CLI_Command extends WP_CLI_Command {
 		}
 
 		if ( ! $no_bulk ) {
-			$this->send_bulk_errors();
+			$this->index_worker->send_bulk_errors();
 		}
 
 		wp_reset_postdata();
