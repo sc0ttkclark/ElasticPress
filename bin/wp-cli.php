@@ -183,27 +183,6 @@ class ElasticPress_CLI_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Helper method for creating the network alias
-	 *
-	 * @since 0.9
-	 * @return array|bool
-	 */
-	private function _create_network_alias() {
-		$sites   = ep_get_sites();
-		$indexes = array();
-
-		foreach ( $sites as $site ) {
-			switch_to_blog( $site['blog_id'] );
-
-			$indexes[] = ep_get_index_name();
-
-			restore_current_blog();
-		}
-
-		return ep_create_network_alias( $indexes );
-	}
-
-	/**
 	 * Index all posts for a site or network wide
 	 *
 	 * @synopsis [--setup] [--network-wide] [--posts-per-page] [--nobulk] [--offset] [--show-bulk-errors] [--post-type] [--keep-active]
