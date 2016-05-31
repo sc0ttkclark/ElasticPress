@@ -212,8 +212,10 @@ class EP_Index_Worker {
 			} else {
 
 				$complete = true;
-				break;
 
+				if ( defined( 'WP_CLI' ) && WP_CLI ) {
+					break;
+				}
 			}
 
 			if ( defined( 'WP_CLI' ) && WP_CLI ) {
