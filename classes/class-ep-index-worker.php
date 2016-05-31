@@ -102,8 +102,6 @@ class EP_Index_Worker {
 	 */
 	protected function _index_helper() {
 
-		global $wpdb, $wp_object_cache;
-
 		$posts_per_page = apply_filters( 'ep_index_posts_per_page', 350 );
 
 		$offset_transient = get_transient( 'ep_index_offset' );
@@ -133,7 +131,7 @@ class EP_Index_Worker {
 
 				$query->the_post();
 
-				$result = $this->queue_post( get_the_ID(), $query->post_count, $offset );
+				$result = $this->queue_post( get_the_ID(), $query->post_count, $offset, false );
 
 				if ( ! $result ) {
 
@@ -197,34 +195,68 @@ class EP_Index_Worker {
 	 *
 	 * @since 1.9
 	 *
-	 * @param int $post_id      The post ID to add.
-	 * @param int $bulk_trigger The maximum number of posts to hold in the queue before triggering a bulk-update operation.
-	 * @param int $offset       The current offset to keep track of.
+	 * @param int  $post_id          The post ID to add.
+	 * @param int  $bulk_trigger     The maximum number of posts to hold in the queue before triggering a bulk-update operation.
+	 * @param int  $offset           The current offset to keep track of.
+	 * @param bool $show_bulk_errors True to show bulk errors or false.
 	 *
-	 * @return bool True on success or false
+	 * @return bool|int true if successfully synced, false if not or 2 if post was killed before sync
 	 */
-	protected function queue_post( $post_id, $bulk_trigger, $offset ) {
+	public function queue_post( $post_id, $bulk_trigger, $offset = 0, $show_bulk_errors = false ) {
 
 		static $post_count = 0;
+		static $killed_post_count = 0;
 
-		// Put the post into the queue.
-		$this->posts[ $post_id ][] = '{ "index": { "_id": "' . absint( $post_id ) . '" } }';
-		$this->posts[ $post_id ][] = addcslashes( wp_json_encode( ep_prepare_post( $post_id ) ), "\n" );
+		$killed_post = false;
 
-		// Augment the counter.
-		++ $post_count;
+		$post_args = ep_prepare_post( $post_id );
+
+		// Mimic EP_Sync_Manager::sync_post( $post_id ), otherwise posts can slip
+		// through the kill filter... that would be bad!
+		if ( apply_filters( 'ep_post_sync_kill', false, $post_args, $post_id ) ) {
+
+			$killed_post_count ++;
+			$killed_post = true; // Save status for return.
+
+		} else { // Post wasn't killed so process it.
+
+			// Put the post into the queue.
+			$this->posts[ $post_id ][] = '{ "index": { "_id": "' . absint( $post_id ) . '" } }';
+
+			if ( function_exists( 'wp_json_encode' ) ) {
+
+				$this->posts[ $post_id ][] = addcslashes( wp_json_encode( $post_args ), "\n" );
+
+			} else {
+
+				$this->posts[ $post_id ][] = addcslashes( json_encode( $post_args ), "\n" );
+
+			}
+
+			// Augment the counter.
+			++ $post_count;
+
+		}
 
 		// If we have hit the trigger, initiate the bulk request.
-		if ( absint( $bulk_trigger ) === $post_count ) {
+		if ( ( $post_count + $killed_post_count ) === absint( $bulk_trigger ) ) {
 
-			$this->bulk_index( $offset );
+			// Don't waste time if we've killed all the posts.
+			if ( ! empty( $this->posts ) ) {
+				$this->bulk_index( $offset, $show_bulk_errors );
+			}
 
 			// Reset the post count.
-			$post_count = 0;
+			$post_count        = 0;
+			$killed_post_count = 0;
 
 			// Reset the posts.
 			$this->posts = array();
 
+		}
+
+		if ( true === $killed_post ) {
+			return 2;
 		}
 
 		return true;
@@ -238,16 +270,12 @@ class EP_Index_Worker {
 	 *
 	 * @since 1.9
 	 *
-	 * @param int $offset The current offset to keep track of.
+	 * @param int  $offset           The current offset to keep track of.
+	 * @param bool $show_bulk_errors true to show individual post error messages for bulk errors.
 	 *
 	 * @return bool|WP_Error true on success or WP_Error on failure
 	 */
-	protected function bulk_index( $offset ) {
-
-		$failed_transient = get_transient( 'ep_index_failed_posts' );
-
-		$failed_posts  = is_array( $failed_transient ) ? $failed_transient : array();
-		$failed_blocks = array();
+	protected function bulk_index( $offset = 0, $show_bulk_errors = false ) {
 
 		// Monitor how many times we attempt to add this particular bulk request.
 		static $attempts = 0;
@@ -255,8 +283,18 @@ class EP_Index_Worker {
 		// Augment the attempts.
 		++ $attempts;
 
+		$failed_transient = get_transient( 'ep_index_failed_posts' );
+
+		$failed_posts  = is_array( $failed_transient ) ? $failed_transient : array();
+		$failed_blocks = array();
+
 		// Make sure we actually have something to index.
 		if ( empty( $this->posts ) ) {
+
+			if ( defined( 'WP_CLI' ) && WP_CLI ) {
+				WP_CLI::error( 'There are no posts to index.' );
+			}
+
 			return 0;
 		}
 
@@ -270,12 +308,21 @@ class EP_Index_Worker {
 		}
 
 		// Make sure to add a new line at the end or the request will fail.
-		$body = rtrim( implode( PHP_EOL, $flatten ) ) . PHP_EOL;
+		$body = rtrim( implode( "\n", $flatten ) ) . "\n";
+
+		// Show the content length in bytes if in debug.
+		if ( defined( 'WP_CLI' ) && WP_CLI && defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			WP_CLI::log( 'Request string length: ' . size_format( mb_strlen( $body, '8bit' ), 2 ) );
+		}
 
 		// Decode the response.
 		$response = ep_bulk_index_posts( $body );
 
 		if ( is_wp_error( $response ) ) {
+
+			if ( defined( 'WP_CLI' ) && WP_CLI ) {
+				WP_CLI::error( implode( "\n", $response->get_error_messages() ) );
+			}
 
 			$failed_blocks   = is_array( get_transient( 'ep_index_failed_blocks' ) ) ? get_transient( 'ep_index_failed_blocks' ) : array();
 			$failed_blocks[] = $offset;
@@ -296,7 +343,7 @@ class EP_Index_Worker {
 					}
 				}
 
-				$this->bulk_index( $offset );
+				$this->bulk_index( $offset, $show_bulk_errors );
 
 			} else {
 
@@ -352,20 +399,20 @@ class EP_Index_Worker {
 	 *
 	 * @return void
 	 */
-	protected function send_bulk_errors() {
+	public function send_bulk_errors() {
 
 		$failed_posts = get_transient( 'ep_index_failed_posts' );
 
 		if ( false !== $failed_posts && is_array( $failed_posts ) ) {
 
-			$email_text = esc_html__( 'The following posts failed to index:' . PHP_EOL . PHP_EOL, 'elasticpress' );
+			$error_text = esc_html__( 'The following posts failed to index:' . PHP_EOL . PHP_EOL, 'elasticpress' );
 
 			foreach ( $failed_posts as $failed ) {
 
 				$failed_post = get_post( $failed );
 
 				if ( $failed_post ) {
-					$email_text .= "- {$failed}: " . $failed_post->post_title . PHP_EOL;
+					$error_text .= "- {$failed}: " . $failed_post->post_title . PHP_EOL;
 				}
 			}
 
@@ -374,9 +421,9 @@ class EP_Index_Worker {
 			 *
 			 * @since 1.9
 			 *
-			 * @param string $email_text The message body of the bulk error email.
+			 * @param string $error_text The message body of the bulk error email.
 			 */
-			$email_text = apply_filters( 'ep_bulk_errors_email_text', $email_text );
+			$error_text = apply_filters( 'ep_bulk_errors_email_text', $error_text );
 
 			/**
 			 * Filter the email subject used to send the bulk error email
@@ -396,7 +443,15 @@ class EP_Index_Worker {
 			 */
 			$email_to = apply_filters( 'wp_bulk_errors_email_to', get_option( 'admin_email' ) );
 
-			wp_mail( $email_to, $email_subject, $email_text );
+			if ( defined( 'WP_CLI' ) && WP_CLI ) {
+
+				WP_CLI::log( $error_text );
+
+			} else {
+
+				wp_mail( $email_to, $email_subject, $error_text );
+
+			}
 
 			// Clear failed posts after sending emails.
 			delete_transient( 'ep_index_failed_posts' );
