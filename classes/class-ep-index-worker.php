@@ -116,13 +116,13 @@ class EP_Index_Worker {
 		$current_synced = 0;
 
 		$args = apply_filters( 'ep_index_posts_args', array(
-			'posts_per_page'         => $posts_per_page,
-			'post_type'              => ep_get_indexable_post_types(),
-			'post_status'            => ep_get_indexable_post_status(),
-			'offset'                 => $offset,
-			'ignore_sticky_posts'    => true,
-			'orderby'                => 'ID',
-			'order'                  => 'DESC',
+			'posts_per_page'      => $posts_per_page,
+			'post_type'           => ep_get_indexable_post_types(),
+			'post_status'         => ep_get_indexable_post_status(),
+			'offset'              => $offset,
+			'ignore_sticky_posts' => true,
+			'orderby'             => 'ID',
+			'order'               => 'DESC',
 		) );
 
 		$query = new WP_Query( $args );
@@ -163,31 +163,7 @@ class EP_Index_Worker {
 		usleep( 500 ); // Delay to let $wpdb catch up.
 
 		// Avoid running out of memory.
-		$wpdb->queries = array();
-
-		if ( is_object( $wp_object_cache ) ) {
-
-			$wp_object_cache->group_ops      = array();
-			$wp_object_cache->stats          = array();
-			$wp_object_cache->memcache_debug = array();
-
-			// Make sure this is a public property, before trying to clear it.
-			try {
-				$cache_property = new ReflectionProperty( $wp_object_cache, 'cache' );
-				if ( $cache_property->isPublic() ) {
-					$wp_object_cache->cache = array();
-				}
-				unset( $cache_property );
-			} catch ( ReflectionException $e ) {
-			}
-
-			if ( is_callable( array( $wp_object_cache, '__remoteset' ) ) ) {
-				call_user_func( array( $wp_object_cache, '__remoteset' ) ); // Important.
-			}
-		}
-
-		// Prevent wp_actions from growing out of control.
-		$wp_actions = array();
+		$this->stop_the_insanity();
 
 		set_transient( 'ep_index_offset', $offset, 600 );
 		set_transient( 'ep_index_synced', $synced, 600 );
@@ -425,6 +401,66 @@ class EP_Index_Worker {
 			// Clear failed posts after sending emails.
 			delete_transient( 'ep_index_failed_posts' );
 
+		}
+	}
+
+	/**
+	 * Resets some values to reduce memory footprint.
+	 */
+	public function stop_the_insanity() {
+
+		global $wpdb, $wp_object_cache, $wp_actions, $wp_filter;
+
+		$wpdb->queries = array();
+
+		if ( is_object( $wp_object_cache ) ) {
+
+			$wp_object_cache->group_ops      = array();
+			$wp_object_cache->stats          = array();
+			$wp_object_cache->memcache_debug = array();
+
+			// Make sure this is a public property, before trying to clear it.
+			try {
+
+				$cache_property = new ReflectionProperty( $wp_object_cache, 'cache' );
+
+				if ( $cache_property->isPublic() ) {
+					$wp_object_cache->cache = array();
+				}
+
+				unset( $cache_property );
+
+			} catch ( ReflectionException $e ) {
+			}
+
+			/*
+			 * In the case where we're not using an external object cache, we need to call flush on the default
+			 * WordPress object cache class to clear the values from the cache property
+			 */
+			if ( ! wp_using_ext_object_cache() ) {
+				wp_cache_flush();
+			}
+
+			if ( is_callable( $wp_object_cache, '__remoteset' ) ) {
+				call_user_func( array( $wp_object_cache, '__remoteset' ) ); // important.
+			}
+		}
+
+		// Prevent wp_actions from growing out of control.
+		$wp_actions = array();
+
+		// WP_Query class adds filter get_term_metadata using its own instance
+		// what prevents WP_Query class from being destructed by PHP gc.
+		// It's high memory consuming as WP_Query instance holds all query results inside itself
+		// and in theory $wp_filter will not stop growing until Out Of Memory exception occurs.
+		if ( isset( $wp_filter['get_term_metadata'][10] ) ) {
+
+			foreach ( $wp_filter['get_term_metadata'][10] as $hook => $content ) {
+
+				if ( preg_match( '#^[0-9a-f]{32}lazyload_term_meta$#', $hook ) ) {
+					unset( $wp_filter['get_term_metadata'][10][ $hook ] );
+				}
+			}
 		}
 	}
 }

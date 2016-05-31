@@ -385,8 +385,8 @@ class ElasticPress_CLI_Command extends WP_CLI_Command {
 
 			usleep( 500 );
 
-			// Avoid running out of memory
-			$this->stop_the_insanity();
+			// Avoid running out of memory.
+			$this->index_worker->stop_the_insanity();
 
 		}
 
@@ -682,61 +682,6 @@ class ElasticPress_CLI_Command extends WP_CLI_Command {
 			WP_CLI::log( 'ElasticPress is currently activated.' );
 		} else {
 			WP_CLI::log( 'ElasticPress is currently deactivated.' );
-		}
-	}
-
-	/**
-	 * Resets some values to reduce memory footprint.
-	 */
-	public function stop_the_insanity() {
-		global $wpdb, $wp_object_cache, $wp_actions, $wp_filter;
-
-		$wpdb->queries = array();
-
-		if ( is_object( $wp_object_cache ) ) {
-			$wp_object_cache->group_ops = array();
-			$wp_object_cache->stats = array();
-			$wp_object_cache->memcache_debug = array();
-
-			// Make sure this is a public property, before trying to clear it
-			try {
-				$cache_property = new ReflectionProperty( $wp_object_cache, 'cache' );
-				if ( $cache_property->isPublic() ) {
-					$wp_object_cache->cache = array();
-				}
-				unset( $cache_property );
-			} catch ( ReflectionException $e ) {
-			}
-
-			/*
-			 * In the case where we're not using an external object cache, we need to call flush on the default
-			 * WordPress object cache class to clear the values from the cache property
-			 */
-			if ( ! wp_using_ext_object_cache() ) {
-				wp_cache_flush();
-			}
-
-			if ( is_callable( $wp_object_cache, '__remoteset' ) ) {
-				call_user_func( array( $wp_object_cache, '__remoteset' ) ); // important
-			}
-		}
-
-		// Prevent wp_actions from growing out of control
-		$wp_actions = array();
-
-		// WP_Query class adds filter get_term_metadata using its own instance
-		// what prevents WP_Query class from being destructed by PHP gc.
-		//    if ( $q['update_post_term_cache'] ) {
-		//        add_filter( 'get_term_metadata', array( $this, 'lazyload_term_meta' ), 10, 2 );
-		//    }
-		// It's high memory consuming as WP_Query instance holds all query results inside itself
-		// and in theory $wp_filter will not stop growing until Out Of Memory exception occurs.
-		if ( isset( $wp_filter['get_term_metadata'][10] ) ) {
-			foreach ( $wp_filter['get_term_metadata'][10] as $hook => $content ) {
-				if ( preg_match( '#^[0-9a-f]{32}lazyload_term_meta$#', $hook ) ) {
-					unset( $wp_filter['get_term_metadata'][10][$hook] );
-				}
-			}
 		}
 	}
 
