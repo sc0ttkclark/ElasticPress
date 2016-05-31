@@ -98,73 +98,138 @@ class EP_Index_Worker {
 	 *
 	 * @since 1.9
 	 *
+	 * @param array $args Array of sync arguments.
+	 *
 	 * @return array Array of posts successfully synced as well as errors
 	 */
-	protected function _index_helper() {
+	public function _index_helper( $args = array() ) {
 
-		$posts_per_page = apply_filters( 'ep_index_posts_per_page', 350 );
+		$sync_transient = get_transient( 'ep_index_synced' );
 
-		$offset_transient = get_transient( 'ep_index_offset' );
-		$sync_transient   = get_transient( 'ep_index_synced' );
+		$synced = false === $sync_transient ? 0 : absint( $sync_transient );
+		$errors = array();
 
-		$synced         = false === $sync_transient ? 0 : absint( $sync_transient );
-		$errors         = array();
-		$offset         = false === $offset_transient ? 0 : absint( $offset_transient );
 		$complete       = false;
 		$current_synced = 0;
 
-		$args = apply_filters( 'ep_index_posts_args', array(
-			'posts_per_page'      => $posts_per_page,
-			'post_type'           => ep_get_indexable_post_types(),
-			'post_status'         => ep_get_indexable_post_status(),
-			'offset'              => $offset,
-			'ignore_sticky_posts' => true,
-			'orderby'             => 'ID',
-			'order'               => 'DESC',
-		) );
+		$no_bulk = false;
 
-		$query = new WP_Query( $args );
+		if ( defined( 'WP_CLI' ) && WP_CLI && isset( $args['nobulk'] ) ) {
+			$no_bulk = true;
+		}
 
-		if ( $query->have_posts() ) {
+		$show_bulk_errors = false;
 
-			while ( $query->have_posts() ) {
+		if ( isset( $args['show-bulk-errors'] ) ) {
+			$show_bulk_errors = true;
+		}
 
-				$query->the_post();
+		$posts_per_page = apply_filters( 'ep_index_posts_per_page', 350 );
 
-				$result = $this->queue_post( get_the_ID(), $query->post_count, $offset, false );
+		if ( ! empty( $args['posts-per-page'] ) ) {
+			$posts_per_page = absint( $args['posts-per-page'] );
+		}
 
-				if ( ! $result ) {
+		$offset_transient = get_transient( 'ep_index_offset' );
+		$offset           = false === $offset_transient ? 0 : absint( $offset_transient );
 
-					$errors[] = get_the_ID();
+		if ( ! empty( $args['offset'] ) ) {
+			$offset = absint( $args['offset'] );
+		}
 
-				} else {
+		$post_type = ep_get_indexable_post_types();
 
-					$current_synced ++;
-					$synced ++;
+		if ( ! empty( $args['post-type'] ) ) {
 
-				}
-			}
-
-			$totals = get_transient( 'ep_post_count' );
-
-			if ( $totals['total'] === $synced ) {
-				$complete = true;
-			}
-		} else {
-
-			$complete = true;
+			$post_type = explode( ',', $args['post-type'] );
+			$post_type = array_map( 'trim', $post_type );
 
 		}
 
-		$offset += $posts_per_page;
+		/**
+		 * Create WP_Query here and reuse it in the loop to avoid high memory consumption.
+		 */
+		$query = new WP_Query();
 
-		usleep( 500 ); // Delay to let $wpdb catch up.
+		$continue = true;
 
-		// Avoid running out of memory.
-		$this->stop_the_insanity();
+		while ( $continue ) {
 
-		set_transient( 'ep_index_offset', $offset, 600 );
-		set_transient( 'ep_index_synced', $synced, 600 );
+			// We don't need the while loop for GUI indexing, only CLI.
+			if ( ! defined( 'WP_CLI' ) || ! WP_CLI ) {
+				$continue = false;
+			}
+
+			$args = apply_filters( 'ep_index_posts_args', array(
+				'posts_per_page'         => $posts_per_page,
+				'post_type'              => $post_type,
+				'post_status'            => ep_get_indexable_post_status(),
+				'offset'                 => $offset,
+				'ignore_sticky_posts'    => true,
+				'orderby'                => 'ID',
+				'order'                  => 'DESC',
+				'cache_results '         => false,
+				'update_post_meta_cache' => false,
+				'update_post_term_cache' => false,
+			) );
+
+			$query->query( $args );
+
+			if ( $query->have_posts() ) {
+
+				while ( $query->have_posts() ) {
+
+					$query->the_post();
+
+					if ( $no_bulk ) {
+
+						// Index the posts one-by-one. Not sure why someone may want to do this.
+						$result = ep_sync_post( get_the_ID() );
+
+					} else {
+
+						$result = $this->queue_post( get_the_ID(), $query->post_count, $offset, $show_bulk_errors );
+
+					}
+
+					if ( ! $result ) {
+
+						$errors[] = get_the_ID();
+
+					} else {
+
+						$current_synced ++;
+						$synced ++;
+
+					}
+				}
+
+				$totals = get_transient( 'ep_post_count' );
+
+				if ( $totals['total'] === $synced ) {
+					$complete = true;
+				}
+			} else {
+
+				$complete = true;
+				break;
+
+			}
+
+			if ( defined( 'WP_CLI' ) && WP_CLI ) {
+				WP_CLI::log( 'Processed ' . ( $query->post_count + $offset ) . '/' . $query->found_posts . ' entries. . .' );
+			}
+
+			$offset += $posts_per_page;
+
+			usleep( 500 ); // Delay to let $wpdb catch up.
+
+			// Avoid running out of memory.
+			$this->stop_the_insanity();
+
+			set_transient( 'ep_index_offset', $offset, 600 );
+			set_transient( 'ep_index_synced', $synced, 600 );
+		}
 
 		if ( true === $complete ) {
 
@@ -177,7 +242,7 @@ class EP_Index_Worker {
 			 *
 			 * @param bool $to_send true to send bulk errors or false [Default: true]
 			 */
-			if ( true === apply_filters( 'ep_disable_index_bulk_errors', true ) ) {
+			if ( ! $no_bulk || true === apply_filters( 'ep_disable_index_bulk_errors', true ) ) {
 				$this->send_bulk_errors();
 			}
 		}

@@ -233,7 +233,7 @@ class ElasticPress_CLI_Command extends WP_CLI_Command {
 			foreach ( $sites as $site ) {
 				switch_to_blog( $site['blog_id'] );
 
-				$result = $this->_index_helper( $assoc_args );
+				$result = $this->index_worker->_index_helper( $assoc_args );
 
 				$total_indexed += $result['synced'];
 
@@ -256,7 +256,7 @@ class ElasticPress_CLI_Command extends WP_CLI_Command {
 
 			WP_CLI::log( __( 'Indexing posts...', 'elasticpress' ) );
 
-			$result = $this->_index_helper( $assoc_args );
+			$result = $this->index_worker->_index_helper( $assoc_args );
 
 			WP_CLI::log( sprintf( __( 'Number of posts indexed on site %d: %d', 'elasticpress' ), get_current_blog_id(), $result['synced'] ) );
 
@@ -271,112 +271,6 @@ class ElasticPress_CLI_Command extends WP_CLI_Command {
 		$this->activate();
 
 		WP_CLI::success( __( 'Done!', 'elasticpress' ) );
-	}
-
-	/**
-	 * Helper method for indexing posts
-	 *
-	 * @param array $args
-	 *
-	 * @since 0.9
-	 * @return array
-	 */
-	private function _index_helper( $args ) {
-		$synced = 0;
-		$errors = array();
-
-		$no_bulk = false;
-
-		if ( isset( $args['nobulk'] ) ) {
-			$no_bulk = true;
-		}
-
-		$show_bulk_errors = false;
-
-		if ( isset( $args['show-bulk-errors'] ) ) {
-			$show_bulk_errors = true;
-		}
-
-		$posts_per_page = 350;
-
-		if ( ! empty( $args['posts-per-page'] ) ) {
-			$posts_per_page = absint( $args['posts-per-page'] );
-		}
-
-		$offset = 0;
-
-		if ( ! empty( $args['offset'] ) ) {
-			$offset = absint( $args['offset'] );
-		}
-
-		$post_type = ep_get_indexable_post_types();
-
-		if ( ! empty( $args['post-type'] ) ) {
-			$post_type = explode( ',', $args['post-type'] );
-			$post_type = array_map( 'trim', $post_type );
-		}
-
-		/**
-		 * Create WP_Query here and reuse it in the loop to avoid high memory consumption.
-		 */
-		$query = new WP_Query();
-
-		while ( true ) {
-
-			$args = apply_filters( 'ep_index_posts_args', array(
-				'posts_per_page'         => $posts_per_page,
-				'post_type'              => $post_type,
-				'post_status'            => ep_get_indexable_post_status(),
-				'offset'                 => $offset,
-				'ignore_sticky_posts'    => true,
-				'orderby'                => 'ID',
-				'order'                  => 'DESC',
-				'cache_results '         => false,
-				'update_post_meta_cache' => false,
-				'update_post_term_cache' => false,
-			) );
-			$query->query( $args );
-
-			if ( $query->have_posts() ) {
-
-				while ( $query->have_posts() ) {
-					$query->the_post();
-
-					if ( $no_bulk ) {
-						// index the posts one-by-one. not sure why someone may want to do this.
-						$result = ep_sync_post( get_the_ID() );
-					} else {
-						$result = $this->index_worker->queue_post( get_the_ID(), $query->post_count, 0, $show_bulk_errors );
-					}
-
-					if ( ! $result ) {
-						$errors[] = get_the_ID();
-					} elseif ( true === $result ) {
-						$synced ++;
-					}
-				}
-			} else {
-				break;
-			}
-
-			WP_CLI::log( 'Processed ' . ( $query->post_count + $offset ) . '/' . $query->found_posts . ' entries. . .' );
-
-			$offset += $posts_per_page;
-
-			usleep( 500 );
-
-			// Avoid running out of memory.
-			$this->index_worker->stop_the_insanity();
-
-		}
-
-		if ( ! $no_bulk ) {
-			$this->index_worker->send_bulk_errors();
-		}
-
-		wp_reset_postdata();
-
-		return array( 'synced' => $synced, 'errors' => $errors );
 	}
 
 	/**
