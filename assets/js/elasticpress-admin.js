@@ -64,10 +64,11 @@
 		 */
 		processIndex: function (bar, button, stopBtn, restartBtn, status) {
 			var SELF = this;
-			
+
 			var data = {
 				action: 'ep_launch_index',
-				nonce : ep.nonce
+				nonce : ep.nonce,
+				keepActive: $( '#ep_keep_active').prop( 'checked' )
 			};
 
 			//call the ajax

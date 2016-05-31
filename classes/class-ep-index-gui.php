@@ -187,7 +187,7 @@ class EP_Index_GUI {
 		$site        = false;
 		$sites       = false;
 		$indexes     = false;
-		$keep_active = isset( $_POST['keep_active'] ) ? 'true' === $_POST['keep_active'] : false;
+		$keep_active = isset( $_POST['keepActive'] ) && 'true' === $_POST['keepActive'] ? true : false;
 
 		if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK ) {
 			$network = true;
