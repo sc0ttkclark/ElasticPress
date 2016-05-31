@@ -345,7 +345,7 @@ class ElasticPress_CLI_Command extends WP_CLI_Command {
 			$result = ep_activate();
 
 			if ( $result ) {
-				WP_CLI::Success( 'ElasticPress was activated!' );
+				WP_CLI::success( 'ElasticPress was activated!' );
 			} else {
 				WP_CLI::warning( 'ElasticPress was unable to be activated.' );
 			}
@@ -370,7 +370,7 @@ class ElasticPress_CLI_Command extends WP_CLI_Command {
 			$result = ep_deactivate();
 
 			if ( $result ) {
-				WP_CLI::Success( 'ElasticPress was deactivated!' );
+				WP_CLI::success( 'ElasticPress was deactivated!' );
 			} else {
 				WP_CLI::warning( 'ElasticPress was unable to be deactivated.' );
 			}
