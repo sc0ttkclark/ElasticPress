@@ -173,7 +173,7 @@ class ElasticPress_CLI_Command extends WP_CLI_Command {
 
 		ep_delete_network_alias();
 
-		$create_result = $this->_create_network_alias();
+		$create_result = $this->index_worker->create_network_alias();
 
 		if ( $create_result ) {
 			WP_CLI::success( __( 'Done!', 'elasticpress' ) );
@@ -268,7 +268,7 @@ class ElasticPress_CLI_Command extends WP_CLI_Command {
 
 			WP_CLI::log( __( 'Recreating network alias...', 'elasticpress' ) );
 
-			$this->_create_network_alias();
+			$this->index_worker->create_network_alias();
 
 			WP_CLI::log( sprintf( __( 'Total number of posts indexed: %d', 'elasticpress' ), $total_indexed ) );
 
