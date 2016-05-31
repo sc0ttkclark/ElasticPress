@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ElasticPress 1.9\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/elasticpress\n"
-"POT-Creation-Date: 2016-05-31 16:11:22+00:00\n"
+"POT-Creation-Date: 2016-05-31 20:47:19+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -85,11 +85,51 @@ msgstr ""
 msgid "Total time elapsed: "
 msgstr ""
 
-#: bin/wp-cli.php:512 classes/class-ep-config.php:186
+#: bin/wp-cli.php:341
+msgid "ElasticPress is already activated."
+msgstr ""
+
+#: bin/wp-cli.php:343
+msgid "ElasticPress is currently deactivated, activating..."
+msgstr ""
+
+#: bin/wp-cli.php:348
+msgid "ElasticPress was activated!"
+msgstr ""
+
+#: bin/wp-cli.php:350
+msgid "ElasticPress was unable to be activated."
+msgstr ""
+
+#: bin/wp-cli.php:366
+msgid "ElasticPress is already deactivated."
+msgstr ""
+
+#: bin/wp-cli.php:368
+msgid "ElasticPress is currently activated, deactivating..."
+msgstr ""
+
+#: bin/wp-cli.php:373
+msgid "ElasticPress was deactivated!"
+msgstr ""
+
+#: bin/wp-cli.php:375
+msgid "ElasticPress was unable to be deactivated."
+msgstr ""
+
+#: bin/wp-cli.php:393
+msgid "ElasticPress is currently activated."
+msgstr ""
+
+#: bin/wp-cli.php:395
+msgid "ElasticPress is currently deactivated."
+msgstr ""
+
+#: bin/wp-cli.php:406 classes/class-ep-config.php:186
 msgid "EP_HOST is not defined! Check wp-config.php"
 msgstr ""
 
-#: bin/wp-cli.php:516 classes/class-ep-config.php:190
+#: bin/wp-cli.php:410 classes/class-ep-config.php:190
 msgid "Unable to reach Elasticsearch Server! Check that service is running."
 msgstr ""
 
@@ -175,7 +215,7 @@ msgstr ""
 msgid "Index Status"
 msgstr ""
 
-#: classes/class-ep-index-worker.php:435
+#: classes/class-ep-index-worker.php:502
 msgid ": ElasticPress Index Errors"
 msgstr ""
 
@@ -284,9 +324,7 @@ msgid "Restart Index"
 msgstr ""
 
 #: includes/tabs/settings.php:74
-msgid ""
-"Do not deactivate Elasticsearch integration (this will not delete current "
-"index, mappings and posts before reindexing)"
+msgid "Run a full setup of indexes including mappings."
 msgstr ""
 
 #: includes/tabs/stats.php:30
