@@ -49,7 +49,7 @@ class EP_Index_Worker {
 	 *
 	 * @return array|bool Array of indexes or false on error
 	 */
-	protected function _create_network_alias() {
+	public function create_network_alias() {
 
 		$sites   = ep_get_sites();
 		$indexes = array();
