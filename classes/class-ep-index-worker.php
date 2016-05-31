@@ -171,7 +171,7 @@ class EP_Index_Worker {
 			$wp_object_cache->stats          = array();
 			$wp_object_cache->memcache_debug = array();
 
-			// Make sure this is a public property, before trying to clear it
+			// Make sure this is a public property, before trying to clear it.
 			try {
 				$cache_property = new ReflectionProperty( $wp_object_cache, 'cache' );
 				if ( $cache_property->isPublic() ) {
@@ -186,7 +186,7 @@ class EP_Index_Worker {
 			}
 		}
 
-		// Prevent wp_actions from growing out of control
+		// Prevent wp_actions from growing out of control.
 		$wp_actions = array();
 
 		set_transient( 'ep_index_offset', $offset, 600 );
