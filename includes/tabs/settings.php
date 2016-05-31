@@ -17,10 +17,10 @@ $action = 'options.php';
 if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK ) {
 	$action = '';
 	$paused      = absint( get_site_option( 'ep_index_paused' ) );
-	$keep_active = absint( get_site_option( 'ep_index_keep_active' ) );
+	$setup = absint( get_site_option( 'ep_index_setup' ) );
 } else {
 	$paused      = absint( get_option( 'ep_index_paused' ) );
-	$keep_active = absint( get_option( 'ep_index_keep_active' ) );
+	$setup = absint( get_option( 'ep_index_setup' ) );
 }
 
 if ( false === get_transient( 'ep_index_offset' ) ) {
@@ -71,7 +71,7 @@ $stop_text  = $paused ? esc_html__( 'Resume Indexing', 'elasticpress' ) : esc_ht
 			<input type="submit" name="ep_pause_index" id="ep_pause_index" class="button hidden" value="<?php echo esc_attr( $stop_text ); ?>"<?php if ( $paused ) : echo ' data-paused="enabled"'; endif; ?>>
 			<br />
 			<br />
-			<input type="checkbox" name="ep_keep_active" id="ep_keep_active"<?php if ( $paused ) : echo ' disabled="disabled"'; endif; ?><?php if ( $keep_active ) : echo ' checked="checked"'; endif; ?>/><label for="ep_keep_active"><?php esc_html_e( 'Do not deactivate Elasticsearch integration (this will not delete current index, mappings and posts before reindexing)', 'elasticpress' ) ?></label>
+			<input type="checkbox" name="ep_index_setup" id="ep_index_setup"<?php if ( $paused ) : echo ' disabled="disabled"'; endif; ?><?php if ( $setup ) : echo ' checked="checked"'; endif; ?>/><label for="ep_keep_active"><?php esc_html_e( 'Run a full setup of indexes including mappings.', 'elasticpress' ) ?></label>
 		<?php endif; ?>
 	</p>
 

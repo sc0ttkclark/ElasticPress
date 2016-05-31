@@ -68,7 +68,7 @@
 			var data = {
 				action: 'ep_launch_index',
 				nonce : ep.nonce,
-				keepActive: $( '#ep_keep_active').prop( 'checked' )
+				setup: $( '#ep_index_setup').prop( 'checked' )
 			};
 
 			//call the ajax
