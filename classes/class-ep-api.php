@@ -129,7 +129,7 @@ class EP_API {
 	 * @since 0.1.0
 	 * @return array
 	 */
-	public function search( $args, $scope = 'current' ) {
+	public function query( $args, $scope = 'current' ) {
 		$index = null;
 
 		if ( 'all' === $scope ) {
@@ -166,7 +166,7 @@ class EP_API {
 
 			$response = json_decode( $response_body, true );
 
-			if ( $this->is_empty_search( $response ) ) {
+			if ( $this->is_empty_query( $response ) ) {
 				return array( 'found_posts' => 0, 'posts' => array() );
 			}
 
@@ -209,7 +209,7 @@ class EP_API {
 	 * @since 0.1.2
 	 * @return bool
 	 */
-	public function is_empty_search( $response ) {
+	public function is_empty_query( $response ) {
 
 		if ( ! is_array( $response ) ) {
 			return true;
@@ -2156,7 +2156,7 @@ function ep_index_post( $post, $blocking = true ) {
 	return EP_API::factory()->index_post( $post, $blocking );
 }
 
-function ep_search( $args, $scope = 'current' ) {
+function ep_query( $args, $scope = 'current' ) {
 	return EP_API::factory()->search( $args, $scope );
 }
 

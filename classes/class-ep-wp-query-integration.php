@@ -61,7 +61,7 @@ class EP_WP_Query_Integration {
 		// Nukes the FOUND_ROWS() database query
 		add_filter( 'found_posts_query', array( $this, 'filter_found_posts_query' ), 5, 2 );
 
-		// Search and filter in EP_Posts to WP_Query
+		// Filter in EP documents to WP_Query
 		add_filter( 'the_posts', array( $this, 'filter_the_posts' ), 10, 2 );
 
 		// Ensure we're in a loop before we allow blog switching
@@ -100,7 +100,7 @@ class EP_WP_Query_Integration {
 			 * Manually setting a header as $wp_query isn't yet initialized
 			 * when we call: add_filter('wp_headers', 'filter_wp_headers');
 			 */
-			header( 'X-ElasticPress-Search: true' );
+			header( 'X-ElasticPress-Query: true' );
 		}
 	}
 
@@ -170,7 +170,7 @@ class EP_WP_Query_Integration {
 	}
 
 	/**
-	 * Filter the posts array to contain ES search results in EP_Post form. Pull previously search posts.
+	 * Filter the posts array to contain ES query results.
 	 *
 	 * @param array $posts
 	 * @param object &$query
@@ -203,7 +203,7 @@ class EP_WP_Query_Integration {
 	}
 
 	/**
-	 * Filter query string used for get_posts(). Search for posts and save for later.
+	 * Filter query string used for get_posts(). Query for posts and save for later.
 	 * Return a query that will return nothing.
 	 *
 	 * @param string $request
@@ -217,40 +217,14 @@ class EP_WP_Query_Integration {
 		}
 
 		$query_vars = $query->query_vars;
+		$query_vars['post_type'] = apply_filters( 'ep_pre_query_post_type', $query_vars['post_type'], $query );
+
+		if ( false === $query_vars['post_type'] ) {
+			return "WHERE 0 = 1";
+		}
+
 		if ( 'any' === $query_vars['post_type'] ) {
-
-			if ( $query->is_search() ) {
-
-				/*
-				 * This is a search query
-				 * To follow WordPress conventions,
-				 * make sure we only search 'searchable' post types
-				 */
-				$searchable_post_types = ep_get_searchable_post_types();
-
-				// If we have no searchable post types, there's no point going any further
-				if ( empty( $searchable_post_types ) ) {
-
-					// Have to return something or it improperly calculates the found_posts
-					return "WHERE 0 = 1";
-				}
-
-				// Conform the post types array to an acceptable format for ES
-				$post_types = array();
-				foreach( $searchable_post_types as $type ) {
-					$post_types[] = $type;
-				}
-
-				// These are now the only post types we will search
-				$query_vars['post_type'] = $post_types;
-			} else {
-
-				/*
-				 * This is not a search query
-				 * so unset the post_type query var
-				 */
-				unset( $query_vars['post_type'] );
-			}
+			unset( $query_vars['post_type'] );
 		}
 
 		$new_posts = apply_filters( 'ep_wp_query_search_cached_posts', array(), $query );
@@ -264,16 +238,16 @@ class EP_WP_Query_Integration {
 
 			$formatted_args = ep_format_args( $query_vars );
 
-			$search = ep_search( $formatted_args, $scope );
+			$es_query = ep_query( $formatted_args, $scope );
 
-			if ( false === $search ) {
+			if ( false === $es_query ) {
 				return $request;
 			}
 
-			$query->found_posts = $search['found_posts'];
-			$query->max_num_pages = ceil( $search['found_posts'] / $query->get( 'posts_per_page' ) );
+			$query->found_posts = $es_query['found_posts'];
+			$query->max_num_pages = ceil( $es_query['found_posts'] / $query->get( 'posts_per_page' ) );
 
-			foreach ( $search['posts'] as $post_array ) {
+			foreach ( $es_query['posts'] as $post_array ) {
 				$post = new stdClass();
 
 				$post->ID = $post_array['post_id'];
@@ -323,12 +297,12 @@ class EP_WP_Query_Integration {
 				}
 			}
 
-			do_action( 'ep_wp_query_non_cached_search', $new_posts, $search, $query );
+			do_action( 'ep_wp_query_non_cached_search', $new_posts, $es_query, $query );
 		}
 
 		$this->posts_by_query[spl_object_hash( $query )] = $new_posts;
 
-		do_action( 'ep_wp_query_search', $new_posts, $search, $query );
+		do_action( 'ep_wp_query_search', $new_posts, $es_query, $query );
 
 		global $wpdb;
 
