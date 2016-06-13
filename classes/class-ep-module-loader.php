@@ -2,23 +2,29 @@
 
 class EP_Module_Loader {
 
+	public $loaded = array();
+
 	public function load_all() {
-		$modules = get_option( 'ep_active_modules', array() );
+		$modules = apply_filters( 'ep_active_modules', get_option( 'ep_active_modules', array() ) );
 
-		$module_objects = array();
+		$this->loaded = array();
 
-		foreach ( $modules as $module_path ) {
-			$module = require_once( $module_path );
-			$module = new $module;
+		foreach ( $modules as $module ) {
+			// If it's not an EP_Module, it has to be a path
+			if ( ! is_a( $module, 'EP_Module' ) ) {
+				$module = require_once( $module_path );
+			}
 
-			$module_objects[$module_path] = $module;
+			$this->loaded[$module->slug] = $module;
 		}
+
+		// Handle dependencies
 
 		$already_setup = array();
 
 		$to_setup = array();
 
-		foreach ( $module_objects as $module_slug => $module ) {
+		foreach ( $this->loaded as $module_slug => $module ) {
 			array_unshift( $to_setup, $module_slug );
 
 			while ( true ) {
@@ -35,7 +41,7 @@ class EP_Module_Loader {
 			foreach ( $to_setup as $module_setup_slug ) {
 				if ( empty( $already_setup[$module_setup_slug] ) ) {
 					// Do set up
-					$module_objects[$module_setup_slug]->setup();
+					$this->loaded[$module_setup_slug]->setup();
 				}
 
 				$already_setup[$module_setup_slug] = true;
@@ -43,6 +49,8 @@ class EP_Module_Loader {
 
 			$to_setup = array();
 		}
+
+		$this->loaded = $this->loaded;
 	}
 
 	public function get_available() {
@@ -53,11 +61,11 @@ class EP_Module_Loader {
 		$modules = array();
 		$modules_root = EP_MODULES_DIR;
 
-		$modules_dir = @opendir( $modules_root);
+		$modules_dir = @opendir( $modules_root );
 		$module_files = array();
 
 		if ( $modules_dir ) {
-			while (($file = readdir( $modules_dir ) ) !== false ) {
+			while ( ( $file = readdir( $modules_dir ) ) !== false ) {
 				if ( substr( $file, 0, 1 ) === '.' ) {
 					continue;
 				}
@@ -74,7 +82,7 @@ class EP_Module_Loader {
 							}
 
 							if ( substr( $subfile, -4 ) === '.php' ) {
-								$plugin_files[] = "$file/$subfile";
+								$module_files[] = "$file/$subfile";
 							}
 						}
 
@@ -98,11 +106,11 @@ class EP_Module_Loader {
 			$module = include_once( "$modules_root/$module_file" );
 
 			if ( is_a( $module, 'EP_Module' ) ) {
-				$modules["$modules_root/$module_file"] = $module->get_slug();
+				$modules[] = "$modules_root/$module_file";
 			}
 		}
 
-		//set_transient( 'ep_available_modules', $modules, HOUR_IN_SECONDS);
+		set_transient( 'ep_available_modules', $modules, HOUR_IN_SECONDS);
 
 		return $modules;
 	}
@@ -124,5 +132,3 @@ class EP_Module_Loader {
 		return $instance;
 	}
 }
-
-EP_Module_Loader::factory();

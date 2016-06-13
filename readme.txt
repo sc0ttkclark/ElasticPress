@@ -80,6 +80,12 @@ First, make sure you have Elasticsearch configured properly.
 
 == Changelog ==
 
+= 2.1 =
+
+Backward compat breaks:
+
+Move ep_admin_wp_query_integration to search integration only. EP integration by default is available everywhere.
+
 = 2.0 =
 
 10up ships ElasticPress 2.0 with __radical search algorithm improvements__ and a __more comprehensive integration of WP_Query__. ElasticPress is now even closer to supporting the complete WP_Query API. This version also improves upon post syncing ensuring that post meta updates are synced to Elasticsearch, adds a number of important hooks, and, of course, fixes some pesky bugs.

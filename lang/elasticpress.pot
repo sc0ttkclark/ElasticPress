@@ -2,9 +2,9 @@
 # This file is distributed under the GPLv2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: ElasticPress 2.0\n"
+"Project-Id-Version: ElasticPress 2.1\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/elasticpress\n"
-"POT-Creation-Date: 2016-06-01 16:31:42+00:00\n"
+"POT-Creation-Date: 2016-06-13 22:14:45+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -127,140 +127,30 @@ msgstr ""
 msgid "No running host available."
 msgstr ""
 
-#: classes/class-ep-index-gui.php:131
-msgid ""
-"Mappings could not be completed. If the error persists contact your system "
-"administrator"
-msgstr ""
-
-#: classes/class-ep-index-gui.php:144
-msgid ""
-"Indexing could not be completed. If the error persists contact your system "
-"administrator"
-msgstr ""
-
-#: classes/class-ep-index-gui.php:185 classes/class-ep-index-gui.php:325
-#: classes/class-ep-index-gui.php:359 classes/class-ep-index-gui.php:391
-#: classes/class-ep-settings.php:167
-msgid "Security error!"
-msgstr ""
-
-#: classes/class-ep-index-gui.php:404
-msgid "Search Stats"
-msgstr ""
-
-#: classes/class-ep-index-gui.php:407
-msgid "Total Queries:"
-msgstr ""
-
-#: classes/class-ep-index-gui.php:410
-msgid "Query Time:"
-msgstr ""
-
-#: classes/class-ep-index-gui.php:413
-msgid "Total Fetches:"
-msgstr ""
-
-#: classes/class-ep-index-gui.php:416
-msgid "Fetch Time:"
-msgstr ""
-
-#: classes/class-ep-index-gui.php:421
-msgid "Index Stats"
-msgstr ""
-
-#: classes/class-ep-index-gui.php:424
-msgid "Index Total:"
-msgstr ""
-
-#: classes/class-ep-index-gui.php:427
-msgid "Index Time:"
-msgstr ""
-
-#: classes/class-ep-index-status.php:62
-msgid "Index Status"
-msgstr ""
-
-#: classes/class-ep-index-worker.php:414
-msgid ": ElasticPress Index Errors"
-msgstr ""
-
-#: classes/class-ep-settings.php:112 classes/class-ep-settings.php:138
-msgid "items indexed"
-msgstr ""
-
-#: classes/class-ep-settings.php:115
-msgid "items indexed in "
-msgstr ""
-
-#: classes/class-ep-settings.php:132 includes/settings/index.php:31
-msgid "Running Index..."
-msgstr ""
-
-#: classes/class-ep-settings.php:133 includes/settings/index.php:26
-msgid "Run Index"
-msgstr ""
-
-#: classes/class-ep-settings.php:134 includes/settings/index.php:29
-msgid "Indexing is Paused"
-msgstr ""
-
-#: classes/class-ep-settings.php:135 includes/settings/index.php:36
-msgid "Resume Indexing"
-msgstr ""
-
-#: classes/class-ep-settings.php:136 includes/settings/index.php:36
-msgid "Pause Indexing"
-msgstr ""
-
-#: classes/class-ep-settings.php:140
-msgid " site(s)"
-msgstr ""
-
-#: classes/class-ep-settings.php:144
-msgid ""
-"A failure has occured. Please try the indexing operation again and if the "
-"error persists contact your website administrator."
-msgstr ""
-
-#: classes/class-ep-settings.php:145
-msgid "Index complete <a href=\"\">Refresh the stats</a>"
-msgstr ""
-
-#: classes/class-ep-settings.php:193
-msgid "Elasticsearch Host:"
-msgstr ""
-
-#: classes/class-ep-settings.php:202
-msgid "Use Elasticsearch:"
-msgstr ""
-
-#: classes/class-ep-settings.php:433
-msgid "Elasticsearch Integration Options"
-msgstr ""
-
-#: classes/class-ep-wp-date-query.php:488
-#. translators: Date query invalid date message: 1: invalid value, 2: type of
-#. value, 3: minimum valid value, 4: maximum valid value
-msgid "Invalid value %1$s for %2$s. Expected value should be between %3$s and %4$s."
-msgstr ""
-
-#: classes/class-ep-wp-date-query.php:518
-#. translators: 1: year, 2: month, 3: day of month
-msgid ""
-"The following values do not describe a valid date: year %1$s, month %2$s, "
-"day %3$s."
-msgstr ""
-
-#: classes/class-ep-wp-date-query.php:535
-#. translators: 1: month, 2: day of month
-msgid "The following values do not describe a valid date: month %1$s, day %2$s."
-msgstr ""
-
 #: includes/settings/index.php:22
 msgid ""
 "Do not deactivate Elasticsearch integration (this will not delete current "
 "index, mappings and posts before reindexing)"
+msgstr ""
+
+#: includes/settings/index.php:26
+msgid "Run Index"
+msgstr ""
+
+#: includes/settings/index.php:29
+msgid "Indexing is Paused"
+msgstr ""
+
+#: includes/settings/index.php:31
+msgid "Running Index..."
+msgstr ""
+
+#: includes/settings/index.php:36
+msgid "Resume Indexing"
+msgstr ""
+
+#: includes/settings/index.php:36
+msgid "Pause Indexing"
 msgstr ""
 
 #: includes/settings/index.php:45

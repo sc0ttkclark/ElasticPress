@@ -20,13 +20,7 @@
     }
   ],
   "require": {
-    "composer/installers": "~1.0",
     "php": ">=5.2"
-  },
-  "extra": {
-      "installer-paths": {
-          "modules/{$name}": ["vendor/package"]
-      }
   },
   "require-dev": {
     "codeclimate/php-test-reporter": "dev-master",
