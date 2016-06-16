@@ -1,8 +1,8 @@
 {
 	"version": 3,
-	"file": "elasticpress.css",
+	"file": "admin.css",
 	"sources": [
-		"elasticpress.scss"
+		"admin.scss"
 	],
 	"mappings": "",
 	"names": []

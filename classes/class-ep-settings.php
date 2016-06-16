@@ -38,9 +38,26 @@ class EP_Settings {
 			add_action( 'admin_menu', array( $this, 'action_admin_menu' ) );
 		}
 
+		add_action( 'wp_ajax_toggle_module', array( $this, 'ajax_toggle_module' ) );
+
 		// Add assets
 		add_action( 'admin_enqueue_scripts', array( $this, 'action_admin_enqueue_scripts' ) );
 		add_action( 'admin_init', array( $this, 'action_admin_init' ) );
+	}
+
+	public function ajax_toggle_module() {
+		if ( empty( $_POST['module'] ) || ! check_ajax_referer( 'ep_nonce', 'nonce', false ) ) {
+			wp_send_json_error();
+			exit;
+		}
+
+		$module = ep_get_registered_module();
+
+		if ( $module->is_active() ) {
+
+		}
+
+		wp_send_json_success();
 	}
 
 	/**
@@ -53,10 +70,12 @@ class EP_Settings {
 	 */
 	public function action_admin_enqueue_scripts() {
 		// Only add the following to the settings page.
-		if ( isset( get_current_screen()->id ) && strpos( get_current_screen()->id, 'settings_page_elasticpress' ) !== false ) {
+		if ( isset( get_current_screen()->id ) && strpos( get_current_screen()->id, 'elasticpress' ) !== false ) {
 			$maybe_min = ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) ? '' : '.min';
 
-			wp_enqueue_style( 'ep_styles', EP_URL . 'assets/css/elasticpress' . $maybe_min . '.css', array(), EP_VERSION );
+			wp_enqueue_style( 'ep_admin_styles', EP_URL . 'assets/css/admin' . $maybe_min . '.css', array(), EP_VERSION );
+			wp_enqueue_script( 'ep_admin_scripts', EP_URL . 'assets/js/admin' . $maybe_min . '.js', array( 'jquery' ), EP_VERSION, true );
+			wp_localize_script( 'ep_admin_scripts', 'ep', array( 'nonce' => wp_create_nonce( 'ep_nonce' ) ) );
 		}
 	}
 

@@ -27,8 +27,13 @@ define( 'EP_MODULES_DIR', dirname( __FILE__ ) . '/modules' );
 require_once( 'classes/class-ep-config.php' );
 require_once( 'classes/class-ep-api.php' );
 require_once( 'classes/class-ep-sync-manager.php' );
-require_once( 'modules/abstract-ep-module.php' );
-require_once( 'classes/class-ep-module-loader.php' );
+require_once( 'classes/class-ep-module.php' );
+require_once( 'classes/class-ep-modules.php' );
+
+// Include core modules
+require_once( 'modules/search/search.php' );
+require_once( 'modules/related-posts/related-posts.php' );
+require_once( 'modules/woocommerce/woocommerce.php' );
 
 
 // Define a constant if we're network activated to allow plugin to respond accordingly.
@@ -52,7 +57,7 @@ add_action( 'plugins_loaded', 'ep_loader' );
  */
 function ep_loader() {
 	load_plugin_textdomain( 'elasticpress', false, basename( dirname( __FILE__ ) ) . '/lang' ); // Load any available translations first.
-	
+
 	// Load the settings page.
 	require_once( dirname( __FILE__ ) . '/classes/class-ep-settings.php' );
 	new EP_Settings();

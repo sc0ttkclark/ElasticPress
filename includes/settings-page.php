@@ -10,12 +10,25 @@
  */
 ?>
 <div class="wrap">
-	<?php printf( '<h2>%s</h2>', esc_html__( 'ElasticPress', 'elasticpress' ) ); ?>
+	<h2><?php esc_html_e( 'ElasticPress', 'elasticpress' ); ?></h2>
 
-	<div id="dashboard-widgets" class="metabox-holder columns-2 has-right-sidebar">
-		<div class="ep-modules">
-			<?php $modules = EP_Module_Loader::factory()->get_available(); var_dump($modules ); ?>
-		</div>
+	<ul class="ep-modules">
+		<?php $modules = EP_Modules::factory()->registered_modules; ?>
 
-	</div>
+		<?php foreach ( $modules as $module ) : ?>
+			<li class="ep-module-<?php echo esc_attr( $module->slug ); ?>">
+				<h2><?php echo esc_html( $module->title ); ?></h2>
+
+				<?php $module->output_module_box(); ?>
+
+				<div class="action">
+					<?php if ( $module->is_active() ) : ?>
+						<a data-module="<?php echo esc_attr( $module->slug ); ?>" class="js-toggle-module button button-primary" href="#"><?php esc_html_e( 'Deactivate', 'elasticpress' ); ?></a>
+					<?php else : ?>
+						<a data-module="<?php echo esc_attr( $module->slug ); ?>" class="js-toggle-module button button-primary" href="#"><?php esc_html_e( 'Install and Activate', 'elasticpress' ); ?></a>
+					<?php endif; ?>
+				</div>
+			</li>
+		<?php endforeach; ?>
+	</ul>
 </div>
