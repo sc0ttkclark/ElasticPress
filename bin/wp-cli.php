@@ -253,7 +253,11 @@ class ElasticPress_CLI_Command extends WP_CLI_Command {
 			foreach ( $sites as $site ) {
 				switch_to_blog( $site['blog_id'] );
 
+				do_action( 'ep_wp_cli_pre_index_helper' );
+
 				$result = $this->_index_helper( $assoc_args );
+
+				do_action( 'ep_wp_cli_post_index_helper', $this, $assoc_args );
 
 				$total_indexed += $result['synced'];
 
@@ -270,15 +274,19 @@ class ElasticPress_CLI_Command extends WP_CLI_Command {
 
 			$this->_create_network_alias();
 
-			WP_CLI::log( sprintf( __( 'Total number of posts indexed: %d', 'elasticpress' ), $total_indexed ) );
+			WP_CLI::log( sprintf( __( 'Total number of posts indexed: %d', 'elasticpress' ), apply_filters( 'ep_wp_cli_total_indexed', $total_indexed ) ) );
 
 		} else {
 
 			WP_CLI::log( __( 'Indexing posts...', 'elasticpress' ) );
 
+			do_action( 'ep_wp_cli_pre_index_helper' );
+
 			$result = $this->_index_helper( $assoc_args );
 
-			WP_CLI::log( sprintf( __( 'Number of posts indexed on site %d: %d', 'elasticpress' ), get_current_blog_id(), $result['synced'] ) );
+			do_action( 'ep_wp_cli_post_index_helper', $this, $assoc_args );
+
+			WP_CLI::log( sprintf( __( 'Number of posts indexed on site %d: %d', 'elasticpress' ), get_current_blog_id(), apply_filters( 'ep_wp_cli_total_indexed', $results['synced'] )) );
 
 			if ( ! empty( $result['errors'] ) ) {
 				WP_CLI::error( sprintf( __( 'Number of post index errors on site %d: %d', 'elasticpress' ), get_current_blog_id(), count( $result['errors'] ) ) );
@@ -301,7 +309,7 @@ class ElasticPress_CLI_Command extends WP_CLI_Command {
 	 * @since 0.9
 	 * @return array
 	 */
-	private function _index_helper( $args ) {
+	public function _index_helper( $args ) {
 		$synced = 0;
 		$errors = array();
 
