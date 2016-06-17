@@ -15,7 +15,7 @@
 				nonce: ep.nonce
 			}
 		} ).done( function() {
-
+			$modules.find( '.ep-module-' + module ).toggleClass( 'module-active' );
 		} );
 	} );
 } )( jQuery );

@@ -1,20 +1,78 @@
 <?php
 
+/**
+ * Module class to be initiated for all modules
+ *
+ * @since  2.1
+ * @package elasticpress
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // Exit if accessed directly.
+}
+
 class EP_Module {
+	/**
+	 * Module slug
+	 * 
+	 * @var string
+	 * @since  2.1
+	 */
 	public $slug;
 
+	/**
+	 * Module pretty title
+	 * 
+	 * @var string
+	 * @since  2.1
+	 */
 	public $title;
 
+	/**
+	 * Contains registered callback to execute after setup
+	 * 
+	 * @since 2.1
+	 * @var callback
+	 */
 	public $setup_cb;
 
+	/**
+	 * Contains registered callback to output during module box creation
+	 * 
+	 * @since 2.1
+	 * @var callback
+	 */
 	public $module_box_cb;
 
+	/**
+	 * Contains registered callback to execute after activation
+	 * 
+	 * @since 2.1
+	 * @var callback
+	 */
 	public $post_activation_cb;
 
+	/**
+	 * True if the module requires content reindexing after activating
+	 * 
+	 * @since 2.1
+	 * @var [type]
+	 */
 	public $requires_install_reindex;
 
+	/**
+	 * True if the module is active
+	 * 
+	 * @since 2.1
+	 * @var boolean
+	 */
 	public $active;
 
+	/**
+	 * Initiate the module, setting all relevant instance variables
+	 *
+	 * @since  2.1
+	 */
 	public function __construct( $args ) {
 		foreach ( $args as $key => $value ) {
 			$this->$key = $value;
@@ -23,6 +81,11 @@ class EP_Module {
 		do_action( 'ep_module_create', $this );
 	}
 
+	/**
+	 * Ran after a function is activated
+	 *
+	 * @since  2.1
+	 */
 	public function setup() {
 		if ( ! empty( $this->setup_cb ) ) {
 			call_user_func( $this->setup_cb );
@@ -33,6 +96,24 @@ class EP_Module {
 		do_action( 'ep_module_setup', $this->slug, $this );
 	}
 
+	/**
+	 * Ran after a module is activated
+	 *
+	 * @since  2.1
+	 */
+	public function post_activation() {
+		if ( ! empty( $this->post_activation_cb ) ) {
+			call_user_func( $this->post_activation_cb );
+		}
+
+		do_action( 'ep_module_post_activation', $this->slug, $this );
+	}
+
+	/**
+	 * Outputs module box HTML/text.
+	 *
+	 * @since  2.1
+	 */
 	public function output_module_box() {
 		if ( ! empty( $this->module_box_cb ) ) {
 			call_user_func( $this->module_box_cb );
@@ -41,7 +122,13 @@ class EP_Module {
 		do_action( 'ep_module_box', $this->slug, $this );
 	}
 
+	/**
+	 * Returns true if the module is active
+	 *
+	 * @since  2.1
+	 * @return boolean
+	 */
 	public function is_active() {
-		return $this->active;
+		return ( ! empty( $this->active ) );
 	}
 }

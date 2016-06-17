@@ -4,8 +4,11 @@
  *
  * @package elasticpress
  * @since   1.9
- * @author  Allan Collins <allan.collins@10up.com>
  */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // Exit if accessed directly.
+}
 
 /**
  * ElasticPress Settings Page
@@ -51,11 +54,27 @@ class EP_Settings {
 			exit;
 		}
 
-		$module = ep_get_registered_module();
+		$module = ep_get_registered_module( $_POST['module'] );
+
+		$active_modules = get_option( 'ep_active_modules', array() );
 
 		if ( $module->is_active() ) {
+			$key = array_search( $_POST['module'], $active_modules );
 
+			if ( false !== $key ) {
+				unset( $active_modules[$key] );
+			}
+		} else {
+			$active_modules[] = $module->slug;
+
+			if ( $module->requires_install_reindex ) {
+				// Do reindex
+			}
+
+			$module->post_activation();
 		}
+
+		update_option( 'ep_active_modules', $active_modules );
 
 		wp_send_json_success();
 	}

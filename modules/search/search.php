@@ -1,11 +1,27 @@
 <?php
+/**
+ * ElasticPress search module
+ *
+ * @since  2.1
+ * @package elasticpress
+ */
 
+/**
+ * Output module box
+ * 
+ * @since 2.1
+ */
 function ep_search_module_box() {
 	?>
 	<p>Dramatically improve the relevancy of search results and performance of searches. Weight search results by recency.</p>
 	<?php
 }
 
+/**
+ * Setup all module filters
+ *
+ * @since  2.1
+ */
 function ep_search_setup() {
 	/**
 	 * By default EP will not integrate on admin or ajax requests. Since admin-ajax.php is
@@ -91,6 +107,9 @@ function ep_integrate_search_queries( $enabled, $query ) {
 	return $enabled;
 }
 
+/**
+ * Register the module
+ */
 ep_register_module( 'search', array(
 	'title' => 'Search',
 	'setup_cb' => 'ep_search_setup',

@@ -1,2 +1,9 @@
+.ep-module .deactivate {
+  display: none; }
 
-/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IiIsImZpbGUiOiJhZG1pbi5jc3MifQ== */
+.ep-module.module-active .activate {
+  display: none; }
+
+.ep-module.module-active .deactivate {
+  display: inline-block; }
+/*# sourceMappingURL=admin.css.map */

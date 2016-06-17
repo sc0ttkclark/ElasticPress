@@ -1,7 +1,15 @@
 <?php
- if ( ! defined( 'ABSPATH' ) ) {
-    exit; // Exit if accessed directly.
+/**
+ * ElasticPress-Elasticsearch API functionas
+ *
+ * @since  1.0
+ * @package elasticpress
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // Exit if accessed directly.
 }
+
 class EP_API {
 
 	/**

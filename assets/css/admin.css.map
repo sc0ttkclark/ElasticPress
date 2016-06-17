@@ -1,9 +1,1 @@
-{
-	"version": 3,
-	"file": "admin.css",
-	"sources": [
-		"admin.scss"
-	],
-	"mappings": "",
-	"names": []
-}
+{"version":3,"sources":["admin.scss"],"names":[],"mappings":"AACA;EACC,cAAc,EACd;;AAED;EACC,cAAc,EACd;;AAED;EACC,sBAAsB,EACtB","file":"admin.css"}

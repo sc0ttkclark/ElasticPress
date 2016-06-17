@@ -1,4 +1,10 @@
 <?php
+/**
+ * ElasticPress related posts module
+ *
+ * @since  2.1
+ * @package elasticpress
+ */
 
 function ep_related_posts_formatted_args( $formatted_args, $args ) {
 	if ( ! empty( $args[ 'more_like' ] ) ) {
@@ -73,17 +79,30 @@ function ep_related_get_html( $posts ) {
 	return apply_filters( 'ep_related_html', $html, $posts );
 }
 
+/**
+ * Setup all module filters
+ *
+ * @since  2.1
+ */
 function ep_related_posts_setup() {
 	add_filter( 'ep_formatted_args', 'ep_related_posts_formatted_args', 10, 2 );
 	add_filter( 'the_content', 'ep_related_posts_filter_content' );
 }
 
+/**
+ * Output module box
+ * 
+ * @since 2.1
+ */
 function ep_related_posts_module_box() {
 	?>
 	<p>Show related content below each post. Related content is queried performantly and effectively.</p>
 	<?php
 }
 
+/**
+ * Register the module
+ */
 ep_register_module( 'related_posts', array(
 	'title' => 'Related Posts',
 	'setup_cb' => 'ep_related_posts_setup',

@@ -1,10 +1,17 @@
 <?php
+/**
+ * ElasticPress WooCommerce module
+ *
+ * @since  2.1
+ * @package elasticpress
+ */
+
 
 /**
  * Index Woocommerce post types
  *
  * @param   array $post_types Existing post types.
- * @since   1.0
+ * @since   2.1
  * @return  array
  */
 function ep_wc_post_types( $post_types ) {
@@ -22,7 +29,7 @@ function ep_wc_post_types( $post_types ) {
  *
  * @param   array $meta Existing post meta.
  * @param   array $post Post arguments array.
- * @since   1.0
+ * @since   2.1
  * @return  array
  */
 function ep_wc_whitelist_meta_keys( $meta, $post ) {
@@ -106,7 +113,7 @@ function ep_wc_whitelist_meta_keys( $meta, $post ) {
 /**
  * Prevent order fields search meta query
  *
- * @since  1.1.3
+ * @since  2.1
  */
 function ep_wc_shop_order_search_fields() {
 	return array();
@@ -117,7 +124,7 @@ function ep_wc_shop_order_search_fields() {
  * the fields=>id query for the layered filter nav query
  *
  * @param   array $posts Post object array.
- * @since   1.0
+ * @since   2.1
  * @return  array
  */
 function ep_wc_convert_post_object_to_id( $posts ) {
@@ -140,7 +147,7 @@ function ep_wc_convert_post_object_to_id( $posts ) {
  *
  * @param   array $taxonomies Index taxonomies array.
  * @param   array $post Post properties array.
- * @since   1.0
+ * @since   2.1
  * @return  array
  */
 function ep_wc_whitelist_taxonomies( $taxonomies, $post ) {
@@ -167,7 +174,10 @@ function ep_wc_whitelist_taxonomies( $taxonomies, $post ) {
 }
 
 /**
- * Translate args to ElasticPress compat format
+ * Translate args to ElasticPress compat format. This is the meat of what the module does
+ *
+ * @param  WP_Query $query
+ * @since  2.1
  */
 function ep_wc_translate_args( $query ) {
 
@@ -430,6 +440,7 @@ function ep_wc_translate_args( $query ) {
  * Fetch the ES related meta mapping for orderby
  *
  * @param  $meta_key The meta key to get the mapping for.
+ * @since  2.1
  * @return string    The mapped meta key.
  */
 function ep_wc_get_orderby_meta_mapping( $meta_key ) {
@@ -454,7 +465,7 @@ function ep_wc_get_orderby_meta_mapping( $meta_key ) {
  *
  * @param   array $post_args Post arguments to be indexed in ES.
  * @param   int   $post_id Post ID.
- * @since   1.0
+ * @since   2.1
  * @return  array
  */
 function ep_wc_remove_legacy_meta( $post_args, $post_id ) {
@@ -468,7 +479,8 @@ function ep_wc_remove_legacy_meta( $post_args, $post_id ) {
 /**
  * Fetches all necessary WooCommerce related post statuses
  *
- * @since  1.0
+ * @since  2.1
+ * @return  array
  */
 function ep_wc_get_statuses() {
 	$post_statuses = get_post_stati();
@@ -481,7 +493,7 @@ function ep_wc_get_statuses() {
 /**
  * Handle Woo Commerce related formatted args
  *
- * @since  1.0
+ * @since  2.1
  * @param  array $formatted_args The formatted WP query arguments
  * @return array
  */
@@ -553,7 +565,7 @@ function ep_wc_formatted_args( $formatted_args, $args ) {
  * 
  * @param  bool $enabled
  * @param  object $query
- * @since  1.2.1
+ * @since  2.1
  * @return bool
  */
 function ep_wc_blacklist_coupons( $enabled, $query ) {
@@ -567,7 +579,7 @@ function ep_wc_blacklist_coupons( $enabled, $query ) {
 /**
  * Allow order creations on the front end to get synced
  *
- * @since  1.2.1
+ * @since  2.1
  * @param  bool $override
  * @param  int $post_id
  * @return bool
@@ -580,6 +592,11 @@ function ep_wc_bypass_order_permissions_check( $override, $post_id ) {
 	return $override;
 }
 
+/**
+ * Setup all module filters
+ *
+ * @since  2.1
+ */
 function ep_wc_setup() {
 	add_filter( 'ep_sync_insert_permissions_bypass', 'ep_wc_bypass_order_permissions_check', 10, 2 );
 	add_filter( 'ep_elasticpress_enabled', 'ep_wc_blacklist_coupons', 10 ,2 );
@@ -596,13 +613,20 @@ function ep_wc_setup() {
 	add_filter( 'ep_indexable_post_status', 'ep_wc_get_statuses' );
 }
 
+/**
+ * Output module box
+ * 
+ * @since 2.1
+ */
 function ep_wc_module_box() {
 	?>
 	<p>Dramatically increase the performance of WooCommerce product rivers, product searches, product filters, order searches, and more.</p>
 	<?php
 }
 
-
+/**
+ * Register the module
+ */
 ep_register_module( 'woocommerce', array(
 	'title' => 'WooCommerce',
 	'setup_cb' => 'ep_wc_setup',
