@@ -31,6 +31,8 @@ require_once( 'classes/class-ep-wp-query-integration.php' );
 require_once( 'classes/class-ep-wp-date-query.php' );
 require_once( 'classes/class-ep-module.php' );
 require_once( 'classes/class-ep-modules.php' );
+require_once( 'classes/class-ep-settings.php' );
+require_once( 'classes/class-ep-index-worker.php' );
 
 // Include core modules
 require_once( 'modules/search/search.php' );
@@ -49,23 +51,18 @@ if ( $network_activated ) {
  * WP CLI Commands
  */
 if ( defined( 'WP_CLI' ) && WP_CLI ) {
-	require_once 'bin/wp-cli.php';
+	require_once( 'bin/wp-cli.php' );
 }
 
-add_action( 'plugins_loaded', 'ep_loader' );
-
 /**
- * Loads GUI classes if needed.
+ * Load text domain and handle debugging
  */
 function ep_loader() {
 	load_plugin_textdomain( 'elasticpress', false, basename( dirname( __FILE__ ) ) . '/lang' ); // Load any available translations first.
-
-	// Load the settings page.
-	require_once( dirname( __FILE__ ) . '/classes/class-ep-settings.php' );
-	new EP_Settings();
 	
 	if ( is_user_logged_in() && ! defined( 'WP_EP_DEBUG' ) ) {
 		require_once( ABSPATH . 'wp-admin/includes/plugin.php' );
 		define( 'WP_EP_DEBUG', is_plugin_active( 'debug-bar-elasticpress/debug-bar-elasticpress.php' ) );
 	}
 }
+add_action( 'plugins_loaded', 'ep_loader' );

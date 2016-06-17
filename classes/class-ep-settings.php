@@ -26,15 +26,18 @@ class EP_Settings {
 	var $options_page;
 
 	/**
-	 * Register WordPress hooks
-	 *
-	 * Loads initial actions.
+	 * Placeholder
 	 *
 	 * @since 1.9
-	 * @return EP_Settings
 	 */
-	public function __construct() {
+	public function __construct() { }
 
+	/**
+	 * Setup actions and filters for all things settings
+	 *
+	 * @since  2.1
+	 */
+	public function setup() {
 		if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK ) { // Must be network admin in multisite.
 			add_action( 'network_admin_menu', array( $this, 'action_admin_menu' ) );
 		} else {
@@ -114,7 +117,7 @@ class EP_Settings {
 				'ep_current_synced' => $index_success['current_synced'],
 			);
 		}
-		
+
 		return $data;
 	}
 
@@ -389,4 +392,24 @@ class EP_Settings {
 			array( $this, 'settings_page' )
 		);
 	}
+
+	/**
+	 * Return a singleton instance of the current class
+	 *
+	 * @since 2.1
+	 * @return object
+	 */
+	public static function factory() {
+		static $instance = false;
+
+		if ( ! $instance ) {
+			$instance = new self();
+			$instance->setup();
+		}
+
+		return $instance;
+	}
 }
+
+EP_Settings::factory();
+

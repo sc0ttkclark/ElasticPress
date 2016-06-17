@@ -212,6 +212,7 @@ class EP_Sync_Manager {
 			}
 		}
 	}
+	
 	/**
 	 * Return a singleton instance of the current class
 	 *
