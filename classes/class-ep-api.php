@@ -2165,7 +2165,7 @@ function ep_index_post( $post, $blocking = true ) {
 }
 
 function ep_query( $args, $scope = 'current' ) {
-	return EP_API::factory()->search( $args, $scope );
+	return EP_API::factory()->query( $args, $scope );
 }
 
 function ep_get_post( $post_id ) {

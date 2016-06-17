@@ -43,8 +43,52 @@ function ep_search_setup() {
 	}
 
 	add_filter( 'ep_elasticpress_enabled', 'ep_integrate_search_queries' );
-	add_filter( 'ep_pre_query_post_type', 'ep_use_searchable_post_types_on_any' );
 	add_filter( 'ep_formatted_args', 'ep_weight_recent', 10, 2 );
+	add_filter( 'ep_query_post_type', 'ep_filter_query_post_type_for_search', 10, 2 );
+}
+
+/**
+ * Make sure we don't search for "any" on a search query
+ * 
+ * @param  string $post_type
+ * @param  WP_Query $query
+ * @return string|array
+ */
+function ep_filter_query_post_type_for_search( $post_type, $query ) {
+	if ( 'any' === $post_type && $query->is_search() ) {
+		$searchable_post_types = ep_get_searchable_post_types();
+
+		// If we have no searchable post types, there's no point going any further
+		if ( empty( $searchable_post_types ) ) {
+
+			// Have to return something or it improperly calculates the found_posts
+			return false;
+		}
+
+		// Conform the post types array to an acceptable format for ES
+		$post_types = array();
+
+		foreach( $searchable_post_types as $type ) {
+			$post_types[] = $type;
+		}
+
+		// These are now the only post types we will search
+		$post_type = $post_types;
+	}
+
+	return $post_type;
+}
+
+/**
+ * Returns searchable post types for the current site
+ *
+ * @since 1.9
+ * @return mixed|void
+ */
+function ep_get_searchable_post_types() {
+	$post_types = get_post_types( array( 'exclude_from_search' => false ) );
+
+	return apply_filters( 'ep_searchable_post_types', $post_types );
 }
 
 

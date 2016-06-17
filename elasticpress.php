@@ -27,6 +27,8 @@ define( 'EP_MODULES_DIR', dirname( __FILE__ ) . '/modules' );
 require_once( 'classes/class-ep-config.php' );
 require_once( 'classes/class-ep-api.php' );
 require_once( 'classes/class-ep-sync-manager.php' );
+require_once( 'classes/class-ep-wp-query-integration.php' );
+require_once( 'classes/class-ep-wp-date-query.php' );
 require_once( 'classes/class-ep-module.php' );
 require_once( 'classes/class-ep-modules.php' );
 
