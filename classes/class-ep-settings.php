@@ -64,6 +64,7 @@ class EP_Settings {
 		$post_count    = array( 'total' => 0 );
 		$post_types    = ep_get_indexable_post_types();
 		$post_statuses = ep_get_indexable_post_status();
+
 		foreach ( $post_types as $type ) {
 			$type_count          = wp_count_posts( $type );
 			$post_count[ $type ] = 0;
@@ -73,7 +74,9 @@ class EP_Settings {
 				$post_count[ $type ] += $count;
 			}
 		}
+
 		set_transient( 'ep_post_count', $post_count, 600 );
+
 		if ( ! $keep_active && ( false === get_transient( 'ep_index_offset' ) ) ) {
 			// Deactivate our search integration.
 			ep_deactivate();
@@ -87,11 +90,14 @@ class EP_Settings {
 				exit();
 			}
 		}
+
 		$indexer       = new EP_Index_Worker();
 		$index_success = $indexer->index();
+
 		if ( ! $index_success ) {
 			return new WP_Error( esc_html__( 'Indexing could not be completed. If the error persists contact your system administrator', 'elasticpress' ) );
 		}
+
 		$total = get_transient( 'ep_post_count' );
 		if ( false === get_transient( 'ep_index_offset' ) ) {
 			$data = array(
@@ -108,6 +114,7 @@ class EP_Settings {
 				'ep_current_synced' => $index_success['current_synced'],
 			);
 		}
+		
 		return $data;
 	}
 
@@ -212,7 +219,7 @@ class EP_Settings {
 		}
 
 		$result['is_network'] = ( true === $network ) ? 1 : 0;
-		
+
 		wp_send_json_success( $result );
 	}
 
