@@ -22,6 +22,13 @@ function ep_related_posts_formatted_args( $formatted_args, $args ) {
 	return $formatted_args;
 }
 
+/**
+ * Add related posts HTML to the content
+ * 
+ * @param  string $content
+ * @since  2.1
+ * @return string
+ */
 function ep_related_posts_filter_content( $content ) {
 	if ( is_search() || is_home() || is_archive() || is_category() ) {
 		return $content;
@@ -29,14 +36,25 @@ function ep_related_posts_filter_content( $content ) {
 	$post_id		 = get_the_ID();
 	$cache_key		 = md5( 'related_posts_' . $post_id );
 	$related_posts	 = wp_cache_get( $cache_key, 'ep-related-posts' );
+
 	if ( false === $related_posts ) {
 		$related_posts = $this->find_related( $post_id );
 		wp_cache_set( $cache_key, $related_posts, 'ep-related-posts', 300 );
 	}
-	$html = $this->get_html( $related_posts );
+
+	$html = $this->get_html( $related_posts )
+	;
 	return $content . "\n" . $html;
 }
 
+/**
+ * Search Elasticsearch for related content
+ * 
+ * @param  int $post_id
+ * @param  int $return
+ * @since  2.1
+ * @return array|bool
+ */
 function ep_find_related( $post_id, $return = 4 ) {
 	$args = array(
 		'more_like'		 => $post_id,
@@ -52,6 +70,13 @@ function ep_find_related( $post_id, $return = 4 ) {
 	return $query->posts;
 }
 
+/**
+ * Generate related posts html
+ * 
+ * @param  array $posts
+ * @since  2.1
+ * @return string
+ */
 function ep_related_get_html( $posts ) {
 	if ( false === $posts ) {
 		return '';

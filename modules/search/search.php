@@ -47,6 +47,15 @@ function ep_search_setup() {
 	add_filter( 'ep_formatted_args', 'ep_weight_recent', 10, 2 );
 }
 
+
+/**
+ * Weight more recent content in searches
+ * 
+ * @param  array $formatted_args
+ * @param  array $args
+ * @since  2.1
+ * @return array
+ */
 function ep_weight_recent( $formatted_args, $args ) {
 	if ( ! empty( $args['s'] ) ) {
 		$date_score = array(
@@ -68,6 +77,14 @@ function ep_weight_recent( $formatted_args, $args ) {
 	return $formatted_args;
 }
 
+/**
+ * Make sure we search all relevant post types
+ * 
+ * @param  string $post_type
+ * @param  WP_Query $query
+ * @since  2.1
+ * @return bool|string
+ */
 function ep_use_searchable_post_types_on_any( $post_type, $query ) {
 	if ( $query->is_search() && 'any' === $post_type ) {
 
@@ -99,6 +116,14 @@ function ep_use_searchable_post_types_on_any( $post_type, $query ) {
 	return $post_type;
 }
 
+/**
+ * Enable integration on search queries
+ * 
+ * @param  bool $enabled
+ * @param  WP_Query $query
+ * @since  2.1
+ * @return bool
+ */
 function ep_integrate_search_queries( $enabled, $query ) {
 	if ( method_exists( $query, 'is_search' ) && $query->is_search() ) {
 		$enabled = true;
