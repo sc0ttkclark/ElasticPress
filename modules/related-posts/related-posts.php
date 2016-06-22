@@ -38,11 +38,11 @@ function ep_related_posts_filter_content( $content ) {
 	$related_posts	 = wp_cache_get( $cache_key, 'ep-related-posts' );
 
 	if ( false === $related_posts ) {
-		$related_posts = $this->find_related( $post_id );
+		$related_posts = ep_find_related( $post_id );
 		wp_cache_set( $cache_key, $related_posts, 'ep-related-posts', 300 );
 	}
 
-	$html = $this->get_html( $related_posts )
+	$html = ep_related_get_html( $related_posts )
 	;
 	return $content . "\n" . $html;
 }

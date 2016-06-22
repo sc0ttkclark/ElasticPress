@@ -93,8 +93,10 @@ class EP_Dashboard {
 			$index_meta['start'] = false;
 		}
 
+		$posts_per_page = apply_filters( 'ep_index_posts_per_page', 350 );
+
 		$args = apply_filters( 'ep_index_posts_args', array(
-			'posts_per_page'         => 1,
+			'posts_per_page'         => $posts_per_page,
 			'post_type'              => ep_get_indexable_post_types(),
 			'post_status'            => ep_get_indexable_post_status(),
 			'offset'                 => $index_meta['offset'],
@@ -150,7 +152,7 @@ class EP_Dashboard {
 					ep_bulk_index_posts( $body );
 				}
 
-				$index_meta['offset'] = $index_meta['offset'] + 1;
+				$index_meta['offset'] = $index_meta['offset'] + $posts_per_page;
 
 				update_option( 'ep_index_meta', $index_meta );
 			} else {
