@@ -55,6 +55,23 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
 }
 
 /**
+ * If we activate the plugin with no modules option, activate search by default. This
+ * should only happy when first upgrading to 2.1
+ *
+ * @since  2.1
+ */
+function ep_on_activate() {
+	$active_modules = get_option( 'ep_active_modules', false );
+
+	if ( false === $active_modules ) {
+		$active_modules = array( 'search' );
+	}
+
+	update_option( 'ep_active_modules', $active_modules );
+}
+register_activation_hook( __FILE__, 'ep_on_activate' );
+
+/**
  * Load text domain and handle debugging
  */
 function ep_loader() {

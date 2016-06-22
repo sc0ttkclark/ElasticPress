@@ -89,11 +89,15 @@ class EP_Dashboard {
 				'offset' => 0,
 				'start' => true
 			);
+
+			if ( ! empty( $_POST['module_sync'] ) ) {
+				$index_meta['module_sync'] = esc_attr( $_POST['module_sync'] );
+			}
 		} else {
 			$index_meta['start'] = false;
 		}
 
-		$posts_per_page = apply_filters( 'ep_index_posts_per_page', 350 );
+		$posts_per_page = apply_filters( 'ep_index_posts_per_page', 1 );
 
 		$args = apply_filters( 'ep_index_posts_args', array(
 			'posts_per_page'         => $posts_per_page,
@@ -211,6 +215,8 @@ class EP_Dashboard {
 			if ( false !== $key ) {
 				unset( $active_modules[$key] );
 			}
+
+			$data['active'] = false;
 		} else {
 			$active_modules[] = $module->slug;
 
@@ -219,6 +225,8 @@ class EP_Dashboard {
 			}
 
 			$module->post_activation();
+
+			$data['active'] = true;
 		}
 
 		update_option( 'ep_active_modules', $active_modules );

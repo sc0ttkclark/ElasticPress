@@ -1,6 +1,6 @@
 ( function( $ ) {
 	var $modules = $( document.getElementsByClassName( 'ep-modules' ) );
-	var $outerWrap = $( 'js-ep-wrap' );
+	var $outerWrap = $( '.js-ep-wrap' );
 
 	var $progressBar = $( '.progress-bar' );
 	var $syncStatusText = $( '.sync-status' );
@@ -10,6 +10,7 @@
 	var $cancelSyncButton = $( '.cancel-sync' );
 
 	var syncStatus = 'sync';
+	var moduleSync = false;
 	var processed = 0;
 	var toProcess = 0;
 
@@ -27,7 +28,20 @@
 				nonce: ep.nonce
 			}
 		} ).done( function(response) {
-			$modules.find( '.ep-module-' + module ).toggleClass( 'module-active' );
+			var $module = $modules.find( '.ep-module-' + module );
+			
+			if ( response.data.active && response.data.reindex ) {
+				syncStatus = 'sync';
+
+				$module.removeClass( 'module-active' );
+				$module.addClass( 'module-syncing' );
+
+				moduleSync = module;
+
+				sync();
+			} else {
+				$module.toggleClass( 'module-active' );
+			}
 		} );
 	} );
 
@@ -71,6 +85,7 @@
 			$syncStatusText.show();
 			$progressBar.show();
 			$pauseSyncButton.show();
+			$outerWrap.addClass( 'syncing' );
 
 			$cancelSyncButton.hide();
 			$resumeSyncButton.hide();
@@ -81,6 +96,7 @@
 			$syncStatusText.show();
 			$progressBar.show();
 			$pauseSyncButton.hide();
+			$outerWrap.addClass( 'syncing' );
 
 			$cancelSyncButton.show();
 			$resumeSyncButton.show();
@@ -92,11 +108,17 @@
 			$cancelSyncButton.hide();
 			$resumeSyncButton.hide();
 			$pauseSyncButton.hide();
+			$outerWrap.removeClass( 'syncing' );
 			$progressBar.hide();
+
+			setTimeout( function() {
+				$syncStatusText.hide();
+			}, 7000 );
 		} else if ( 'cancel' === syncStatus ) {
 			$syncStatusText.hide();
 			$progressBar.hide();
 			$pauseSyncButton.hide();
+			$outerWrap.removeClass( 'syncing' );
 
 			$cancelSyncButton.hide();
 			$resumeSyncButton.hide();
@@ -113,6 +135,7 @@
 			$cancelSyncButton.hide();
 			$resumeSyncButton.hide();
 			$startSyncButton.show();
+			$outerWrap.removeClass( 'syncing' );
 
 			setTimeout( function() {
 				$syncStatusText.hide();
@@ -137,6 +160,7 @@
 			url: ajaxurl,
 			data: {
 				action: 'ep_index',
+				module_sync: moduleSync,
 				nonce: ep.nonce
 			}
 		} ).done( function( response ) {
