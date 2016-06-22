@@ -99,7 +99,7 @@ module.exports = function ( grunt ) {
 				scripts : {
 
 					files : [
-						'assets/js/**/*'
+						'assets/js/admin.js'
 					],
 
 					tasks : ['uglify:production']

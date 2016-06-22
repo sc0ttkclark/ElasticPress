@@ -31,7 +31,7 @@ require_once( 'classes/class-ep-wp-query-integration.php' );
 require_once( 'classes/class-ep-wp-date-query.php' );
 require_once( 'classes/class-ep-module.php' );
 require_once( 'classes/class-ep-modules.php' );
-require_once( 'classes/class-ep-settings.php' );
+require_once( 'classes/class-ep-dashboard.php' );
 require_once( 'classes/class-ep-index-worker.php' );
 
 // Include core modules

@@ -2,32 +2,42 @@
 /**
  * Template for ElasticPress settings page
  *
- * @since  1.7
+ * @since  2.1
  * @package elasticpress
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
+
+if ( defined( 'EP_HOST' ) && EP_HOST ) {
+	$host = EP_HOST;
+} else {
+	$host = get_option( 'ep_host', '' );
+}
 ?>
 
-<div class="wrap">
-	<h2><?php esc_html_e( 'ElasticPress', 'elasticpress' ); ?></h2>
+<?php require_once( dirname( __FILE__ ) . '/header.php' ); ?>
 
-	<ul class="ep-modules">
-		<?php $modules = EP_Modules::factory()->registered_modules; ?>
+<div class="wrap js-ep-wrap">
+	<h2><?php esc_html_e( 'Settings', 'elasticpress' ); ?></h2>
+	
+	<form action="options.php" method="post">
+		<?php settings_fields( 'elasticpress' ); ?>
+		<?php settings_errors(); ?>
 
-		<?php foreach ( $modules as $module ) : ?>
-			<li class="ep-module ep-module-<?php echo esc_attr( $module->slug ); ?> <?php if ( $module->is_active() ) : ?>module-active<?php endif; ?>">
-				<h2><?php echo esc_html( $module->title ); ?></h2>
+		<table class="form-table">
+			<tbody>
+				<tr>
+					<th scope="row"><label for="ep_host"><?php esc_html_e( 'Elasticsearch Host', 'elasticpress' ); ?></label></th>
+					<td>
+						<input <?php if ( defined( 'EP_HOST' ) && EP_HOST ) : ?>disabled<?php endif; ?> placeholder="http://" type="text" value="<?php echo esc_url( $host ); ?>" name="ep_host" id="ep_host">
+					</td>
+				</tr>
+				<tr>
+			</tbody>
+		</table>
 
-				<?php $module->output_module_box(); ?>
-
-				<div class="action">
-					<a data-module="<?php echo esc_attr( $module->slug ); ?>" class="js-toggle-module deactivate button button-primary" href="#"><?php esc_html_e( 'Deactivate', 'elasticpress' ); ?></a>
-					<a data-module="<?php echo esc_attr( $module->slug ); ?>" class="js-toggle-module activate button button-primary" href="#"><?php esc_html_e( 'Install and Activate', 'elasticpress' ); ?></a>
-				</div>
-			</li>
-		<?php endforeach; ?>
-	</ul>
+		<?php submit_button(); ?>
+	</form>
 </div>
