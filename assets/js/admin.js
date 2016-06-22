@@ -19,6 +19,10 @@
 
 		var module = event.target.getAttribute( 'data-module' );
 
+		var $button = $( this );
+		$button.addClass( 'processing' );
+		var $module = $modules.find( '.ep-module-' + module );
+
 		$.ajax( {
 			method: 'post',
 			url: ajaxurl,
@@ -27,21 +31,28 @@
 				module: module,
 				nonce: ep.nonce
 			}
-		} ).done( function(response) {
-			var $module = $modules.find( '.ep-module-' + module );
-			
-			if ( response.data.active && response.data.reindex ) {
-				syncStatus = 'sync';
+		} ).done( function( response ) {
+			setTimeout( function() {
+				$button.removeClass( 'processing' );
 
-				$module.removeClass( 'module-active' );
-				$module.addClass( 'module-syncing' );
-
-				moduleSync = module;
-
-				sync();
-			} else {
 				$module.toggleClass( 'module-active' );
-			}
+				
+				if ( response.data.active && response.data.reindex ) {
+					syncStatus = 'sync';
+
+					$module.addClass( 'module-syncing' );
+
+					moduleSync = module;
+
+					sync();
+				}
+			}, 700 );
+		} ).error( function() {
+			setTimeout( function() {
+				$button.removeClass( 'processing' );
+				$module.removeClass( 'module-active' );
+				$module.removeClass( 'module-syncing' );
+			}, 700 );
 		} );
 	} );
 
@@ -111,6 +122,11 @@
 			$outerWrap.removeClass( 'syncing' );
 			$progressBar.hide();
 
+			if ( moduleSync ) {
+				var $module = $modules.find( '.ep-module-' + moduleSync );
+				$module.removeClass( 'module-syncing' );
+			}
+
 			setTimeout( function() {
 				$syncStatusText.hide();
 			}, 7000 );
@@ -123,6 +139,11 @@
 			$cancelSyncButton.hide();
 			$resumeSyncButton.hide();
 			$startSyncButton.show();
+
+			if ( moduleSync ) {
+				var $module = $modules.find( '.ep-module-' + moduleSync );
+				$module.removeClass( 'module-syncing' );
+			}
 		} else if ( 'finished' === syncStatus || 'noposts' === syncStatus ) {
 			if ( 'noposts' === syncStatus ) {
 				$syncStatusText.text( 'No posts to sync' );
@@ -136,6 +157,11 @@
 			$resumeSyncButton.hide();
 			$startSyncButton.show();
 			$outerWrap.removeClass( 'syncing' );
+
+			if ( moduleSync ) {
+				var $module = $modules.find( '.ep-module-' + moduleSync );
+				$module.removeClass( 'module-syncing' );
+			}
 
 			setTimeout( function() {
 				$syncStatusText.hide();
@@ -186,8 +212,7 @@
 				// We are starting a sync
 				syncStatus = 'sync';
 				updateSyncDash();
-
-				//debugger;
+				
 				sync();
 			}
 		} ).error( function() {
