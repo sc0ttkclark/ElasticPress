@@ -42,7 +42,7 @@ function ep_search_setup() {
 		return;
 	}
 
-	add_filter( 'ep_elasticpress_enabled', 'ep_integrate_search_queries' );
+	add_filter( 'ep_elasticpress_enabled', 'ep_integrate_search_queries', 10, 2 );
 	add_filter( 'ep_formatted_args', 'ep_weight_recent', 10, 2 );
 	add_filter( 'ep_query_post_type', 'ep_filter_query_post_type_for_search', 10, 2 );
 }
