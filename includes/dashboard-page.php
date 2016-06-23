@@ -27,7 +27,7 @@ $index_meta = get_option( 'ep_index_meta', false );
 			$module_classes = ( $module->is_active() ) ? 'module-active' : '';
 
 			if ( ! empty( $index_meta ) && ! empty( $index_meta['module_sync'] ) && $module->slug === $index_meta['module_sync'] ) {
-				$module_classes = 'module-syncing';
+				$module_classes .= ' module-syncing';
 			}
 			?>
 			<li class="ep-module ep-module-<?php echo esc_attr( $module->slug ); ?> <?php echo esc_attr( $module_classes ); ?>">

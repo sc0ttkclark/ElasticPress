@@ -60,6 +60,10 @@
 		processed = ep.index_meta.offset;
 		toProcess = ep.index_meta['found_posts'];
 
+		if ( ep.index_meta.module_sync ) {
+			moduleSync = ep.index_meta.module_sync;
+		}
+
 		if ( 0 === toProcess ) {
 			if ( response.data.start ) {
 				// No posts to sync
@@ -212,7 +216,7 @@
 				// We are starting a sync
 				syncStatus = 'sync';
 				updateSyncDash();
-				
+
 				sync();
 			}
 		} ).error( function() {
