@@ -91,18 +91,36 @@ class EP_Dashboard {
 			$status = 'start';
 			$index_meta = array(
 				'offset' => 0,
-				'start' => true
+				'start' => true,
 			);
 
 			if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK ) {
 				$sites = ep_get_sites();
+
+				$index_meta['site_stack'] = array();
+				foreach ( $sites as $site ) {
+					$index_meta['site_stack'][] = array(
+						'url' => sanitize_text_field( untrailingslashit( $site['domain'] . $site['path'] ) ),
+						'id' => (int) $site['blog_id'],
+					);
+				}
+
+				$index_meta['current_site'] = array_shift( $index_meta['site_stack'] );
 			}
 
 			if ( ! empty( $_POST['module_sync'] ) ) {
 				$index_meta['module_sync'] = esc_attr( $_POST['module_sync'] );
 			}
+		} else if ( ! empty( $index_meta['site_stack'] ) && $index_meta['offset'] >= $index_meta['found_posts'] ) {
+			$index_meta['start'] = true;
+			$index_meta['offset'] = 0;
+			$index_meta['current_site'] = array_shift( $index_meta['site_stack'] );
 		} else {
 			$index_meta['start'] = false;
+		}
+
+		if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK ) {
+			switch_to_blog( $index_meta['current_site']['id'] );
 		}
 
 		$posts_per_page = apply_filters( 'ep_index_posts_per_page', 1 );
@@ -172,16 +190,24 @@ class EP_Dashboard {
 					update_option( 'ep_index_meta', $index_meta );
 				}
 			} else {
-				// We are done
-				$index_meta['offset'] = $query->found_posts;
-
+				// We are done (with this site)
+				
 				if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK ) {
-					delete_site_option( 'ep_index_meta' );
-				} else {
-					delete_option( 'ep_index_meta' );
-				}
+					if ( empty( $index_meta['site_stack'] ) ) {
+						delete_site_option( 'ep_index_meta' );
 
-				ep_activate();
+						ep_activate();
+					} else {
+						$index_meta['offset'] = $query->found_posts;
+					}
+
+				} else {
+					$index_meta['offset'] = $query->found_posts;
+
+					delete_option( 'ep_index_meta' );
+
+					ep_activate();
+				}
 			}
 		} else {
 
@@ -190,6 +216,10 @@ class EP_Dashboard {
 			} else {
 				update_site_option( 'ep_index_meta', $index_meta );
 			}
+		}
+
+		if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK ) {
+			restore_current_blog();
 		}
 
 		wp_send_json_success( $index_meta );

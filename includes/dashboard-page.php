@@ -11,9 +11,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 $index_meta = get_option( 'ep_index_meta', false );
-
-$sites = ep_get_sites();
-var_dump($sites);
 ?>
 
 <?php require_once( dirname( __FILE__ ) . '/header.php' ); ?>
