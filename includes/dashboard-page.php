@@ -10,7 +10,24 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-$index_meta = get_option( 'ep_index_meta', false );
+if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK ) {
+	$index_meta = get_site_option( 'ep_index_meta', false );
+} else {
+	$index_meta = get_option( 'ep_index_meta', false );
+}
+
+$args = apply_filters( 'ep_index_posts_args', array(
+	'posts_per_page'         => 1,
+	'post_type'              => array( 'post', 'page' ),
+	'post_status'            => array( 'publish' ),
+	'offset'                 => 0,
+	'ignore_sticky_posts'    => true,
+	'orderby'                => 'ID',
+	'order'                  => 'DESC',
+) );
+
+$query = new WP_Query( $args );
+//var_dump($query);
 ?>
 
 <?php require_once( dirname( __FILE__ ) . '/header.php' ); ?>

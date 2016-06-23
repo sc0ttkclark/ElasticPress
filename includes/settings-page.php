@@ -16,7 +16,11 @@ if ( defined( 'EP_HOST' ) && EP_HOST ) {
 	$host = get_option( 'ep_host', '' );
 }
 
-$index_meta = get_option( 'ep_index_meta', false );
+if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK ) {
+	$index_meta = get_site_option( 'ep_index_meta', false );
+} else {
+	$index_meta = get_option( 'ep_index_meta', false );
+}
 ?>
 
 <?php require_once( dirname( __FILE__ ) . '/header.php' ); ?>

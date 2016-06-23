@@ -11,6 +11,8 @@
 
 	var syncStatus = 'sync';
 	var moduleSync = false;
+	var currentSite;
+	var siteStack;
 	var processed = 0;
 	var toProcess = 0;
 
@@ -64,6 +66,14 @@
 			moduleSync = ep.index_meta.module_sync;
 		}
 
+		if ( ep.index_meta.current_site ) {
+			currentSite = ep.index_meta.current_site;
+		}
+
+		if ( ep.index_meta.site_stack ) {
+			siteStack = ep.index_meta.site_stack;
+		}
+
 		if ( 0 === toProcess ) {
 			if ( response.data.start ) {
 				// No posts to sync
@@ -95,7 +105,13 @@
 		}
 
 		if ( 'sync' === syncStatus ) {
-			$syncStatusText.text( 'Syncing ' + parseInt( processed ) + '/' + parseInt( toProcess ) );
+			var text = 'Syncing ' + parseInt( processed ) + '/' + parseInt( toProcess );
+
+			if ( currentSite ) {
+				text += ' (' + currentSite.url + ')'
+			}
+
+			$syncStatusText.text( text );
 
 			$syncStatusText.show();
 			$progressBar.show();
@@ -106,7 +122,13 @@
 			$resumeSyncButton.hide();
 			$startSyncButton.hide();
 		} else if ( 'pause' === syncStatus ) {
-			$syncStatusText.text( 'Syncing paused ' + parseInt( processed ) + '/' + parseInt( toProcess ) );
+			var text = 'Syncing paused ' + parseInt( processed ) + '/' + parseInt( toProcess );
+
+			if ( currentSite ) {
+				text += ' (' + currentSite.url + ')'
+			}
+
+			$syncStatusText.text( text );
 
 			$syncStatusText.show();
 			$progressBar.show();
@@ -131,6 +153,8 @@
 				$module.removeClass( 'module-syncing' );
 			}
 
+			moduleSync = null;
+
 			setTimeout( function() {
 				$syncStatusText.hide();
 			}, 7000 );
@@ -148,6 +172,8 @@
 				var $module = $modules.find( '.ep-module-' + moduleSync );
 				$module.removeClass( 'module-syncing' );
 			}
+
+			moduleSync = null;
 		} else if ( 'finished' === syncStatus || 'noposts' === syncStatus ) {
 			if ( 'noposts' === syncStatus ) {
 				$syncStatusText.text( 'No posts to sync' );
@@ -166,6 +192,8 @@
 				var $module = $modules.find( '.ep-module-' + moduleSync );
 				$module.removeClass( 'module-syncing' );
 			}
+
+			moduleSync = null;
 
 			setTimeout( function() {
 				$syncStatusText.hide();
@@ -201,6 +229,13 @@
 			toProcess = response.data.found_posts;
 			processed = response.data.offset;
 
+			if ( response.data.site_stack ) {
+				siteStack = response.data.site_stack;
+			}
+
+			if ( response.data.current_site ) {
+				currentSite = response.data.current_site;
+			}
 
 			if ( 0 === response.data.found_posts ) {
 				if ( response.data.start ) {

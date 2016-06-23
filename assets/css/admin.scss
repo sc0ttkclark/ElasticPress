@@ -40,6 +40,7 @@ $tablet-width: 768px;
 
 .ep-header-menu .icons .dashicons-update {
 	font-size: 29px;
+	margin-right: 10px;
 	top: -3px;
 }
 
@@ -49,7 +50,7 @@ $tablet-width: 768px;
 	color: inherit;
 	position: relative;
 	top: -3px;
-	margin-left: 16px;
+	margin-left: 8px;
 	cursor: pointer;
 }
 
@@ -94,6 +95,10 @@ $tablet-width: 768px;
 
 .ep-module .postbox {
 	margin-bottom: 0;
+}
+
+.ep-module .postbox .hndle {
+	cursor: inherit;
 }
 
 .ep-module {

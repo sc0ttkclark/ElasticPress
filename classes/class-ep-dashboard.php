@@ -84,6 +84,8 @@ class EP_Dashboard {
 			$index_meta = get_option( 'ep_index_meta', false );
 		}
 
+		$status = false;
+
 		// No current index going on. Let's start over
 		if ( false === $index_meta ) {
 			ep_deactivate();
@@ -98,14 +100,17 @@ class EP_Dashboard {
 				$sites = ep_get_sites();
 
 				$index_meta['site_stack'] = array();
+
 				foreach ( $sites as $site ) {
 					$index_meta['site_stack'][] = array(
-						'url' => sanitize_text_field( untrailingslashit( $site['domain'] . $site['path'] ) ),
+						'url' => untrailingslashit( $site['domain'] . $site['path'] ),
 						'id' => (int) $site['blog_id'],
 					);
 				}
 
 				$index_meta['current_site'] = array_shift( $index_meta['site_stack'] );
+			} else {
+				ep_process_site_mappings();
 			}
 
 			if ( ! empty( $_POST['module_sync'] ) ) {
@@ -121,6 +126,10 @@ class EP_Dashboard {
 
 		if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK ) {
 			switch_to_blog( $index_meta['current_site']['id'] );
+
+			if ( ! empty( $index_meta['start'] ) ) {
+				ep_process_site_mappings();
+			}
 		}
 
 		$posts_per_page = apply_filters( 'ep_index_posts_per_page', 1 );
@@ -133,14 +142,12 @@ class EP_Dashboard {
 			'ignore_sticky_posts'    => true,
 			'orderby'                => 'ID',
 			'order'                  => 'DESC',
-			'cache_results '         => false,
-			'update_post_meta_cache' => false,
-			'update_post_term_cache' => false,
+			'fields' => 'all',
 		) );
 
 		$query = new WP_Query( $args );
 
-		$index_meta['found_posts'] = (int) $query->found_posts;
+		$index_meta['found_posts'] = $query->found_posts;
 
 		if ( $status !== 'start' ) {
 			if ( $query->have_posts() ) {
@@ -182,7 +189,7 @@ class EP_Dashboard {
 					ep_bulk_index_posts( $body );
 				}
 
-				$index_meta['offset'] = $index_meta['offset'] + $posts_per_page;
+				$index_meta['offset'] = absint( $index_meta['offset'] + $posts_per_page );
 
 				if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK ) {
 					update_site_option( 'ep_index_meta', $index_meta );
@@ -198,11 +205,11 @@ class EP_Dashboard {
 
 						ep_activate();
 					} else {
-						$index_meta['offset'] = $query->found_posts;
+						$index_meta['offset'] = (int) $query->found_posts;
 					}
 
 				} else {
-					$index_meta['offset'] = $query->found_posts;
+					$index_meta['offset'] = (int) $query->found_posts;
 
 					delete_option( 'ep_index_meta' );
 
@@ -212,9 +219,9 @@ class EP_Dashboard {
 		} else {
 
 			if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK ) {
-				update_option( 'ep_index_meta', $index_meta );
-			} else {
 				update_site_option( 'ep_index_meta', $index_meta );
+			} else {
+				update_option( 'ep_index_meta', $index_meta );
 			}
 		}
 
