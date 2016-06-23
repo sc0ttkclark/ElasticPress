@@ -624,6 +624,20 @@ function ep_wc_module_box() {
 }
 
 /**
+ * Make sure WC is activated
+ *
+ * @since  2.1
+ * @return bool|WP_Error
+ */
+function wc_dependencies_met_cb() {
+	if ( class_exists( 'WooCommerce' ) ) {
+		return true;
+	} else {
+		return new WP_Error( 'ep-no-woocommerce', esc_html__( 'WooCommerce must be active to use this module.','elasticpress' ) );
+	}
+}
+
+/**
  * Register the module
  */
 ep_register_module( 'woocommerce', array(
@@ -631,5 +645,6 @@ ep_register_module( 'woocommerce', array(
 	'setup_cb' => 'ep_wc_setup',
 	'module_box_cb' => 'ep_wc_module_box',
 	'requires_install_reindex' => true,
+	'dependencies_met_cb' => 'wc_dependencies_met_cb',
 ) );
 

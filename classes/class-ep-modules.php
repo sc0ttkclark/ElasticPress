@@ -41,6 +41,8 @@ class EP_Modules {
 	 *         "setup_cb" (callback) - Callback to a function to be called on each page load when the module is activated
 	 *         "post_activation_cb" (callback) - Callback to a function to be called after a module is first activated
 	 *         "module_box_cb" (callback) - Callback to a function that outputs HTML module box interior (description of module)
+	 *         "dependencies_met_cb" (callback) - Callback to a function that determines if the modules dependencies are met. True 
+	 *         		means yes, WP_Error means no. If no, WP_Error message will be printed to the screen.
 	 *         
 	 * @return boolean
 	 */

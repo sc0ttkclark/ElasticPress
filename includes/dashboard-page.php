@@ -27,7 +27,6 @@ $args = apply_filters( 'ep_index_posts_args', array(
 ) );
 
 $query = new WP_Query( $args );
-//var_dump($query);
 ?>
 
 <?php require_once( dirname( __FILE__ ) . '/header.php' ); ?>
@@ -46,6 +45,11 @@ $query = new WP_Query( $args );
 			if ( ! empty( $index_meta ) && ! empty( $index_meta['module_sync'] ) && $module->slug === $index_meta['module_sync'] ) {
 				$module_classes .= ' module-syncing';
 			}
+
+			$deps_met = $module->dependencies_met();
+			if ( is_wp_error( $deps_met ) ) {
+				$module_classes .= 'module-dependencies-unmet';
+			}
 			?>
 			<li class="ep-module ep-module-<?php echo esc_attr( $module->slug ); ?> <?php echo esc_attr( $module_classes ); ?>">
 				<div class="postbox">
@@ -58,6 +62,12 @@ $query = new WP_Query( $args );
 					</div>
 
 					<div class="action">
+						<div class="module-message module-error">
+							<?php if ( is_wp_error( $deps_met ) ) : ?>
+								<?php echo esc_html( $deps_met->get_error_message() ); ?>
+							<?php endif; ?>
+						</div>
+						
 						<a data-module="<?php echo esc_attr( $module->slug ); ?>" class="js-toggle-module deactivate button"><?php esc_html_e( 'Deactivate', 'elasticpress' ); ?></a>
 						<a data-module="<?php echo esc_attr( $module->slug ); ?>" class="js-toggle-module activate button button-primary"><?php esc_html_e( 'Activate', 'elasticpress' ); ?></a>
 						<button disabled data-module="<?php echo esc_attr( $module->slug ); ?>" class="js-toggle-module syncing-placeholder button"><?php esc_html_e( 'Syncing...', 'elasticpress' ); ?></a>

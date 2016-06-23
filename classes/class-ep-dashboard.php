@@ -101,7 +101,7 @@ class EP_Dashboard {
 			if ( is_network_admin() ) {
 				return;
 			}
-			
+
 			$url = admin_url( 'admin.php?page=elasticpress&resume_sync' );
 			$index_meta = get_option( 'ep_index_meta', false );
 		}
@@ -112,7 +112,7 @@ class EP_Dashboard {
 
 		?>
 		<div class="notice notice-warning">
-			<p><?php printf( __( 'ElasticPress is in the middle of a sync. The plugin wont work until this finishes. Want to <a href="%s">go back and finish it</a>?', 'elasticpress' ), esc_url( $url ) ); ?></p>
+			<p><?php printf( __( 'ElasticPress is in the middle of a sync. The plugin wont work until it finishes. Want to <a href="%s">go back and finish it</a>?', 'elasticpress' ), esc_url( $url ) ); ?></p>
 		</div>
 		<?php
 	}

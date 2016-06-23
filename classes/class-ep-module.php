@@ -45,6 +45,14 @@ class EP_Module {
 	public $module_box_cb;
 
 	/**
+	 * Contains registered callback to determine if a modules dependencies are met
+	 * 
+	 * @since 2.1
+	 * @var callback
+	 */
+	public $dependencies_met_cb;
+
+	/**
 	 * Contains registered callback to execute after activation
 	 * 
 	 * @since 2.1
@@ -94,6 +102,23 @@ class EP_Module {
 		$this->active = true;
 
 		do_action( 'ep_module_setup', $this->slug, $this );
+	}
+
+	/**
+	 * Ran to see if dependencies are met. Returns true or a WP_Error containing an error message
+	 * to display
+	 *
+	 * @since  2.1
+	 * @return  bool|WP_Error
+	 */
+	public function dependencies_met() {
+		$ret = true;
+
+		if ( ! empty( $this->dependencies_met_cb ) ) {
+			$ret = apply_filters( 'ep_module_dependencies_met', call_user_func( $this->dependencies_met_cb ) );
+		}
+
+		return $ret;
 	}
 
 	/**
