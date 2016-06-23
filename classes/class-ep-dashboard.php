@@ -94,6 +94,10 @@ class EP_Dashboard {
 				'start' => true
 			);
 
+			if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK ) {
+				$sites = ep_get_sites();
+			}
+
 			if ( ! empty( $_POST['module_sync'] ) ) {
 				$index_meta['module_sync'] = esc_attr( $_POST['module_sync'] );
 			}
