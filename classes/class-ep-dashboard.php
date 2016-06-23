@@ -42,6 +42,7 @@ class EP_Dashboard {
 		add_action( 'wp_ajax_ep_index', array( $this, 'action_wp_ajax_ep_index' ) );
 		add_action( 'wp_ajax_ep_cancel_index', array( $this, 'action_wp_ajax_ep_cancel_index' ) );
 		add_action( 'admin_notices', array( $this, 'action_mid_index_notice' ) );
+		add_action( 'network_admin_notices', array( $this, 'action_mid_index_notice' ) );
 		add_filter( 'plugin_action_links', array( $this, 'filter_plugin_action_links' ), 10, 2 );
 		add_filter( 'network_admin_plugin_action_links', array( $this, 'filter_plugin_action_links' ), 10, 2 );
 	}
@@ -59,13 +60,13 @@ class EP_Dashboard {
 		if ( is_network_admin() ) {
 			$url = admin_url( 'network/admin.php?page=elasticpress' );
 
-			if ( ! is_plugin_active_for_network( basename( EP_PATH ) . '/elasticpress.php' ) ) {
+			if ( ! defined( 'EP_IS_NETWORK' ) || ! EP_IS_NETWORK ) {
 				return $plugin_actions;
 			}
 		} else {
 			$url = admin_url( 'admin.php?page=elasticpress' );
 
-			if ( is_plugin_active_for_network( basename( EP_PATH ) . '/elasticpress.php' ) ) {
+			if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK ) {
 				return $plugin_actions;
 			}
 		}
@@ -89,7 +90,21 @@ class EP_Dashboard {
 			return;
 		}
 
-		$index_meta = get_option( 'ep_index_meta', false );
+		if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK ) {
+			if ( ! is_network_admin() ) {
+				return;
+			}
+
+			$url = admin_url( 'network/admin.php?page=elasticpress&resume_sync' );
+			$index_meta = get_site_option( 'ep_index_meta', false );
+		} else {
+			if ( is_network_admin() ) {
+				return;
+			}
+			
+			$url = admin_url( 'admin.php?page=elasticpress&resume_sync' );
+			$index_meta = get_option( 'ep_index_meta', false );
+		}
 
 		if ( empty( $index_meta ) ) {
 			return;
@@ -97,7 +112,7 @@ class EP_Dashboard {
 
 		?>
 		<div class="notice notice-warning">
-			<p><?php printf( __( 'ElasticPress is in the middle of a sync. The plugin wont work until this finishes. Want to <a href="%s">go back and finish it</a>?', 'elasticpress' ), esc_url( admin_url( 'admin.php?page=elasticpress&resume_sync' ) ) ); ?></p>
+			<p><?php printf( __( 'ElasticPress is in the middle of a sync. The plugin wont work until this finishes. Want to <a href="%s">go back and finish it</a>?', 'elasticpress' ), esc_url( $url ) ); ?></p>
 		</div>
 		<?php
 	}

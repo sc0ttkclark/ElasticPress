@@ -1,4 +1,15 @@
 <?php
+/**
+ * Header template for ElasticPress settings page
+ *
+ * @since  2.1
+ * @package elasticpress
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // Exit if accessed directly.
+}
+
 $base_url =  ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK ) ? admin_url( 'network/admin.php?page=' ) : admin_url( 'admin.php?page=' );
 ?>
 
