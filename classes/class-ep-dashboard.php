@@ -42,6 +42,41 @@ class EP_Dashboard {
 		add_action( 'wp_ajax_ep_index', array( $this, 'action_wp_ajax_ep_index' ) );
 		add_action( 'wp_ajax_ep_cancel_index', array( $this, 'action_wp_ajax_ep_cancel_index' ) );
 		add_action( 'admin_notices', array( $this, 'action_mid_index_notice' ) );
+		add_filter( 'plugin_action_links', array( $this, 'filter_plugin_action_links' ), 10, 2 );
+		add_filter( 'network_admin_plugin_action_links', array( $this, 'filter_plugin_action_links' ), 10, 2 );
+	}
+
+	/**
+	 * Output dashboard link in plugin actions
+	 * 
+	 * @param  array $plugin_actions
+	 * @param  string $plugin_file
+	 * @since  2.1
+	 * @return array
+	 */
+	public function filter_plugin_action_links( $plugin_actions, $plugin_file ) {
+
+		if ( is_network_admin() ) {
+			$url = admin_url( 'network/admin.php?page=elasticpress' );
+
+			if ( ! is_plugin_active_for_network( basename( EP_PATH ) . '/elasticpress.php' ) ) {
+				return $plugin_actions;
+			}
+		} else {
+			$url = admin_url( 'admin.php?page=elasticpress' );
+
+			if ( is_plugin_active_for_network( basename( EP_PATH ) . '/elasticpress.php' ) ) {
+				return $plugin_actions;
+			}
+		}
+
+		$new_actions = array();
+
+		if ( basename( EP_PATH ) . '/elasticpress.php' === $plugin_file ) {
+			$new_actions['ep_dashboard'] = sprintf( __( '<a href="%s">Dashboard</a>', 'elasticpress' ), esc_url( $url ) );
+		}
+
+		return array_merge( $new_actions, $plugin_actions );
 	}
 
 	/**

@@ -21,6 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 define( 'EP_URL', plugin_dir_url( __FILE__ ) );
+define( 'EP_PATH', plugin_dir_path( __FILE__ ) );
 define( 'EP_VERSION', '2.1' );
 define( 'EP_MODULES_DIR', dirname( __FILE__ ) . '/modules' );
 
