@@ -80,7 +80,12 @@ class EP_Modules {
 	 * @since  2.1
 	 */
 	public function setup_modules() {
-		$modules = apply_filters( 'ep_active_modules', get_option( 'ep_active_modules', array() ) );
+		if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK ) {
+			$modules = get_site_option( 'ep_active_modules', array() );
+		} else {
+			$modules = get_option( 'ep_active_modules', array() );
+		}
+		$modules = apply_filters( 'ep_active_modules', $modules );
 
 		foreach ( $modules as $module_slug ) {
 			if ( empty( $this->registered_modules[$module_slug] ) ) {

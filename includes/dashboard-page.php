@@ -18,7 +18,7 @@ $index_meta = get_option( 'ep_index_meta', false );
 <div class="wrap js-ep-wrap <?php if ( ! empty( $index_meta ) ) : ?>syncing<?php endif; ?>">
 	<h2><?php esc_html_e( 'ElasticPress', 'elasticpress' ); ?></h2>
 
-	<p>ElasticPress let's you supercharge your WordPress website with various modules. Activate the ones you need below.</p>
+	<p><?php esc_html_e( "ElasticPress let's you supercharge your WordPress website with various modules. Activate the ones you need below.", 'elasticpress' ); ?></p>
 
 	<ul class="ep-modules metabox-holder">
 		<?php $modules = EP_Modules::factory()->registered_modules; ?>
@@ -41,9 +41,9 @@ $index_meta = get_option( 'ep_index_meta', false );
 					</div>
 
 					<div class="action">
-						<a data-module="<?php echo esc_attr( $module->slug ); ?>" class="js-toggle-module deactivate button" href="#"><?php esc_html_e( 'Deactivate', 'elasticpress' ); ?></a>
-						<a data-module="<?php echo esc_attr( $module->slug ); ?>" class="js-toggle-module activate button button-primary" href="#"><?php esc_html_e( 'Activate', 'elasticpress' ); ?></a>
-						<button disabled data-module="<?php echo esc_attr( $module->slug ); ?>" class="js-toggle-module syncing-placeholder button" href="#"><?php esc_html_e( 'Syncing...', 'elasticpress' ); ?></a>
+						<a data-module="<?php echo esc_attr( $module->slug ); ?>" class="js-toggle-module deactivate button"><?php esc_html_e( 'Deactivate', 'elasticpress' ); ?></a>
+						<a data-module="<?php echo esc_attr( $module->slug ); ?>" class="js-toggle-module activate button button-primary"><?php esc_html_e( 'Activate', 'elasticpress' ); ?></a>
+						<button disabled data-module="<?php echo esc_attr( $module->slug ); ?>" class="js-toggle-module syncing-placeholder button"><?php esc_html_e( 'Syncing...', 'elasticpress' ); ?></a>
 					</div>
 				</div>
 			</li>

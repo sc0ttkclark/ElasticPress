@@ -6,7 +6,6 @@
  * @package elasticpress
  */
 
-
 /**
  * Index Woocommerce post types
  *
@@ -620,7 +619,7 @@ function ep_wc_setup() {
  */
 function ep_wc_module_box() {
 	?>
-	<p>Dramatically increase the performance of WooCommerce product rivers, product searches, product filters, order searches, and more.</p>
+	<p><?php esc_html_e( 'Dramatically increase the performance of WooCommerce product rivers, product searches, product filters, order searches, and more.', 'elasticpress' ); ?></p>
 	<?php
 }
 

@@ -41,7 +41,7 @@ class EP_Dashboard {
 		add_action( 'admin_init', array( $this, 'action_admin_init' ) );
 		add_action( 'wp_ajax_ep_index', array( $this, 'action_wp_ajax_ep_index' ) );
 		add_action( 'wp_ajax_ep_cancel_index', array( $this, 'action_wp_ajax_ep_cancel_index' ) );
-		add_action('admin_notices', array( $this, 'action_mid_index_notice' ) );
+		add_action( 'admin_notices', array( $this, 'action_mid_index_notice' ) );
 	}
 
 	/**
@@ -78,7 +78,11 @@ class EP_Dashboard {
 			exit;
 		}
 
-		$index_meta = get_option( 'ep_index_meta', false );
+		if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK ) {
+			$index_meta = get_site_option( 'ep_index_meta', false );
+		} else {
+			$index_meta = get_option( 'ep_index_meta', false );
+		}
 
 		// No current index going on. Let's start over
 		if ( false === $index_meta ) {
@@ -158,17 +162,30 @@ class EP_Dashboard {
 
 				$index_meta['offset'] = $index_meta['offset'] + $posts_per_page;
 
-				update_option( 'ep_index_meta', $index_meta );
+				if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK ) {
+					update_site_option( 'ep_index_meta', $index_meta );
+				} else {
+					update_option( 'ep_index_meta', $index_meta );
+				}
 			} else {
 				// We are done
 				$index_meta['offset'] = $query->found_posts;
-				delete_option( 'ep_index_meta' );
+
+				if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK ) {
+					delete_site_option( 'ep_index_meta' );
+				} else {
+					delete_option( 'ep_index_meta' );
+				}
 
 				ep_activate();
 			}
 		} else {
 
-			update_option( 'ep_index_meta', $index_meta );
+			if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK ) {
+				update_option( 'ep_index_meta', $index_meta );
+			} else {
+				update_site_option( 'ep_index_meta', $index_meta );
+			}
 		}
 
 		wp_send_json_success( $index_meta );
@@ -185,7 +202,11 @@ class EP_Dashboard {
 			exit;
 		}
 
-		delete_option( 'ep_index_meta' );
+		if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK ) {
+			delete_site_option( 'ep_index_meta' );
+		} else {
+			delete_option( 'ep_index_meta' );
+		}
 
 		ep_deactivate();
 
@@ -205,7 +226,11 @@ class EP_Dashboard {
 
 		$module = ep_get_registered_module( $_POST['module'] );
 
-		$active_modules = get_option( 'ep_active_modules', array() );
+		if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK ) {
+			$active_modules = get_site_option( 'ep_active_modules', array() );
+		} else {
+			$active_modules = get_option( 'ep_active_modules', array() );
+		}
 
 		$data = array();
 
@@ -229,7 +254,11 @@ class EP_Dashboard {
 			$data['active'] = true;
 		}
 
-		update_option( 'ep_active_modules', $active_modules );
+		if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK ) {
+			update_site_option( 'ep_active_modules', $active_modules );
+		} else {
+			update_option( 'ep_active_modules', $active_modules );
+		}
 
 		wp_send_json_success( $data );
 	}
@@ -252,7 +281,11 @@ class EP_Dashboard {
 
 			$data = array( 'nonce' => wp_create_nonce( 'ep_nonce' ) );
 
-			$index_meta = get_option( 'ep_index_meta' );
+			if ( defined( 'EP_IS_NETWORK' ) && EP_IS_NETWORK ) {
+				$index_meta = get_site_option( 'ep_index_meta' );
+			} else {
+				$index_meta = get_option( 'ep_index_meta' );
+			}
 
 			if ( ! empty( $index_meta ) ) {
 				$data['index_meta'] = $index_meta;

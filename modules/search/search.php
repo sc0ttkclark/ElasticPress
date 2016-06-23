@@ -13,7 +13,7 @@
  */
 function ep_search_module_box() {
 	?>
-	<p>Dramatically improve the relevancy of search results and performance of searches. Weight search results by recency.</p>
+	<p><?php esc_html_e( 'Dramatically improve the relevancy of search results and performance of searches. Weight search results by recency.', 'elasticpress' ); ?></p>
 	<?php
 }
 
